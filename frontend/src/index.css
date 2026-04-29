@@ -1,0 +1,51 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --zeno-deep: #020617;
+  --zeno-glass: rgba(15, 23, 42, 0.6);
+  --zeno-blue: #3b82f6;
+  --zeno-orange: #f97316;
+  --zeno-magenta: #d946ef;
+}
+
+body {
+  background: radial-gradient(circle at top right, #1e1b4b, #020617, #0f172a);
+  color: #ffffff;
+  min-height: screen;
+  font-family: 'Inter', sans-serif;
+}
+
+/* Efecto de botón explosivo tipo logo */
+.btn-cosmic {
+  background: linear-gradient(45deg, #3b82f6, #d946ef, #f97316);
+  background-size: 200% 200%;
+  animation: cosmicGradient 5s ease infinite;
+  box-shadow: 0 0 20px rgba(59, 130, 246, 0.4);
+  transition: all 0.3s ease;
+}
+
+.btn-cosmic:hover {
+  transform: scale(1.02);
+  box-shadow: 0 0 30px rgba(217, 70, 239, 0.6);
+}
+
+@keyframes cosmicGradient {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* Glassmorphism para los inputs */
+.glass-input {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: border 0.3s ease;
+}
+
+.glass-input:focus {
+  border: 1px solid var(--zeno-blue);
+  background: rgba(255, 255, 255, 0.1);
+}
