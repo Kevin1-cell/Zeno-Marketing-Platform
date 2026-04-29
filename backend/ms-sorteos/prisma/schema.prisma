@@ -1,0 +1,141 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Admin {
+  id            String   @id @default(uuid())
+  nombre        String
+  email         String   @unique
+  password_hash String
+  created_at    DateTime @default(now())
+
+  @@map("admins")
+}
+
+model Evento {
+  id            String       @id @default(uuid())
+  nombre        String
+  descripcion   String?
+  fecha         DateTime
+  estado        EstadoEvento @default(ACTIVO)
+  whatsapp_link String?
+  created_at    DateTime     @default(now())
+
+  participantes Participante[]
+  sorteos       Sorteo[]
+
+  @@map("eventos")
+}
+
+model Participante {
+  id              String   @id @default(uuid())
+  evento_id       String
+  nombre_completo String
+  telefon         String
+  nivel           Nivel
+  confirmado      Boolean  @default(false)
+  numero_asignado Int?     @unique
+  created_at      DateTime @default(now())
+
+  evento    Evento    @relation(fields: [evento_id], references: [id])
+  ganadores Ganador[]
+
+  @@unique([telefon, evento_id])
+  @@map("participantes")
+}
+
+model Sorteo {
+  id           String       @id @default(uuid())
+  evento_id    String
+  nombre       String
+  nivel_filtro NivelFilter  @default(TODOS)
+  modo_premios ModoPremio   @default(MANUAL)
+  estado       EstadoSorteo @default(PENDIENTE)
+  created_at   DateTime     @default(now())
+
+  evento            Evento           @relation(fields: [evento_id], references: [id])
+  premios           Premio[]
+  ganadores         Ganador[]
+  exclusionesSesion ExcluidoSesion[]
+
+  @@map("sorteos")
+}
+
+model Premio {
+  id          String  @id @default(uuid())
+  sorteo_id   String
+  descripcion String
+  orden       Int
+  asignado    Boolean @default(false)
+
+  sorteo    Sorteo    @relation(fields: [sorteo_id], references: [id])
+  ganadores Ganador[]
+
+  @@map("premios")
+}
+
+model Ganador {
+  id                 String   @id @default(uuid())
+  sorteo_id          String
+  participante_id    String
+  premio_id          String?
+  premio_descripcion String?
+  numero_ganador     Int
+  confirmado_en      DateTime @default(now())
+
+  sorteo       Sorteo       @relation(fields: [sorteo_id], references: [id])
+  participante Participante @relation(fields: [participante_id], references: [id])
+  premio       Premio?      @relation(fields: [premio_id], references: [id])
+
+  @@map("ganadores")
+}
+
+model ExcluidoSesion {
+  id        String          @id @default(uuid())
+  sorteo_id String
+  numero    Int
+  motivo    MotivoExclusion
+
+  sorteo Sorteo @relation(fields: [sorteo_id], references: [id])
+
+  @@map("numeros_excluidos_sesion")
+}
+
+enum EstadoEvento {
+  ACTIVO
+  FINALIZADO
+}
+
+enum Nivel {
+  C1
+  C2
+  C3
+}
+
+enum NivelFilter {
+  C1
+  C2
+  C3
+  TODOS
+}
+
+enum ModoPremio {
+  PRE_CARGA
+  MANUAL
+}
+
+enum EstadoSorteo {
+  PENDIENTE
+  EN_CURSO
+  FINALIZADO
+}
+
+enum MotivoExclusion {
+  GANADOR
+  REPETICION
+}
