@@ -2,7 +2,7 @@ import { useState } from 'react'
 import axios from 'axios'
 import toast from 'react-hot-toast'
 
-export default function ParticipantesList({ participantes, token, eventoId }) {
+export default function ParticipantesList({ participantes, token, eventoId, onParticipanteRegistrado }) {
   const [confirmandoId, setConfirmandoId] = useState(null)
   const [filtro, setFiltro] = useState('')
   const [formManual, setFormManual] = useState({
@@ -30,6 +30,10 @@ export default function ParticipantesList({ participantes, token, eventoId }) {
       toast.error('No hay evento seleccionado')
       return
     }
+    if (!/^\d{10}$/.test(formManual.telefon)) {
+      toast.error('El número de teléfono debe tener exactamente 10 dígitos')
+      return
+    }
     setRegistrando(true)
     try {
       const res = await axios.post('/participantes/manual', {
@@ -37,12 +41,13 @@ export default function ParticipantesList({ participantes, token, eventoId }) {
         evento_id: eventoId
       }, { headers: { Authorization: `Bearer ${token}` } })
       const p = res.data
-      // Mensaje detallado
       toast.success(
         `✅ Registrado:\n${p.nombre_completo}\n📞 ${p.telefon}\n🎚️ ${p.nivel}\n🎲 Número: ${p.numero_asignado}`,
         { duration: 5000 }
       )
       setFormManual({ nombre_completo: '', telefon: '', nivel: 'C1' })
+      // Notificar al padre que hubo un nuevo registro manual (por si WebSocket no responde)
+      if (onParticipanteRegistrado) onParticipanteRegistrado()
     } catch (err) {
       const msg = err.response?.data?.message || 'Error al registrar'
       toast.error(msg)
@@ -69,7 +74,6 @@ export default function ParticipantesList({ participantes, token, eventoId }) {
     <div className="bg-zeno-card rounded-lg p-4 border border-zeno-border mt-6">
       <h2 className="text-xl font-bold text-zeno-blue mb-4">Participantes</h2>
 
-      {/* Buscador */}
       <div className="mb-4">
         <input
           type="text"
@@ -80,7 +84,6 @@ export default function ParticipantesList({ participantes, token, eventoId }) {
         />
       </div>
 
-      {/* Formulario de registro manual */}
       <div className="mb-6 p-3 bg-zeno-dark rounded-lg border border-zeno-blue">
         <h3 className="text-md font-semibold text-zeno-orange mb-2">Registro manual de participante</h3>
         <form onSubmit={registrarManual} className="flex flex-wrap gap-3 items-end">
@@ -95,10 +98,12 @@ export default function ParticipantesList({ participantes, token, eventoId }) {
             />
           </div>
           <div className="flex-1 min-w-[130px]">
-            <label className="block text-xs text-zeno-text-sec mb-1">Teléfono</label>
+            <label className="block text-xs text-zeno-text-sec mb-1">Teléfono (10 dígitos)</label>
             <input
               type="tel"
               required
+              pattern="\d{10}"
+              title="Debe tener exactamente 10 dígitos"
               className="w-full bg-zeno-card border border-zeno-border rounded px-3 py-1 text-zeno-text"
               value={formManual.telefon}
               onChange={e => setFormManual({ ...formManual, telefon: e.target.value })}
@@ -129,7 +134,6 @@ export default function ParticipantesList({ participantes, token, eventoId }) {
       </div>
 
       <div className="grid md:grid-cols-2 gap-6">
-        {/* Pendientes */}
         <div>
           <h3 className="text-lg font-semibold text-zeno-orange mb-2">
             Pendientes ({registradosFiltrados.length})
@@ -158,7 +162,6 @@ export default function ParticipantesList({ participantes, token, eventoId }) {
           </div>
         </div>
 
-        {/* Confirmados */}
         <div>
           <h3 className="text-lg font-semibold text-zeno-blue mb-2">
             Confirmados ({confirmadosFiltrados.length})

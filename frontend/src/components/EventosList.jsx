@@ -6,33 +6,52 @@ import toast from 'react-hot-toast'
 export default function EventosList({ eventos, onSelect }) {
   const { token } = useAuthStore()
   const [creando, setCreando] = useState(false)
-  const [nuevoEvento, setNuevoEvento] = useState({ nombre: '', fecha: '' })
-  const [editandoWhatsApp, setEditandoWhatsApp] = useState(null)
-  const [nuevoLink, setNuevoLink] = useState('')
+  const [nuevoEvento, setNuevoEvento] = useState({ nombre: '', fecha: '', lugar: '', hora: '', whatsapp_link: '' })
+  const [editandoEvento, setEditandoEvento] = useState(null)
+  const [editData, setEditData] = useState({})
 
   const crearEvento = async (e) => {
     e.preventDefault()
     try {
       await axios.post('/eventos', nuevoEvento, { headers: { Authorization: `Bearer ${token}` } })
       toast.success('Evento creado')
-      setNuevoEvento({ nombre: '', fecha: '' })
+      setNuevoEvento({ nombre: '', fecha: '', lugar: '', hora: '', whatsapp_link: '' })
       setCreando(false)
       window.location.reload()
     } catch (err) {
-      toast.error('Error al crear evento')
+      toast.error(err.response?.data?.message || 'Error al crear evento')
     }
   }
 
-  const actualizarWhatsApp = async (id, link) => {
+  const eliminarEvento = async (id) => {
+    if (!confirm('¿Eliminar este evento? (Se conservará por 7 días, puede restaurarse)')) return
     try {
-      await axios.put(`/eventos/${id}`, { whatsapp_link: link }, {
-        headers: { Authorization: `Bearer ${token}` }
-      })
-      toast.success('Enlace de WhatsApp actualizado')
-      setEditandoWhatsApp(null)
+      await axios.delete(`/eventos/${id}`, { headers: { Authorization: `Bearer ${token}` } })
+      toast.success('Evento eliminado (puede restaurarse)')
       window.location.reload()
     } catch (err) {
-      toast.error('Error al actualizar')
+      toast.error('Error al eliminar')
+    }
+  }
+
+  const restaurarEvento = async (id) => {
+    try {
+      await axios.patch(`/eventos/${id}/restaurar`, {}, { headers: { Authorization: `Bearer ${token}` } })
+      toast.success('Evento restaurado')
+      window.location.reload()
+    } catch (err) {
+      toast.error('Error al restaurar')
+    }
+  }
+
+  const actualizarEvento = async (id) => {
+    try {
+      await axios.put(`/eventos/${id}`, editData, { headers: { Authorization: `Bearer ${token}` } })
+      toast.success('Evento actualizado')
+      setEditandoEvento(null)
+      window.location.reload()
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Error al actualizar')
     }
   }
 
@@ -51,14 +70,28 @@ export default function EventosList({ eventos, onSelect }) {
       </div>
 
       {creando && (
-        <form onSubmit={crearEvento} className="mb-4 p-3 bg-zeno-dark rounded-lg flex gap-2">
+        <form onSubmit={crearEvento} className="mb-4 p-3 bg-zeno-dark rounded-lg flex flex-wrap gap-2">
           <input
             type="text"
-            placeholder="Nombre del evento"
-            className="flex-1 bg-zeno-card border border-zeno-border rounded px-2 py-1"
+            placeholder="Nombre *"
+            className="flex-1 min-w-[120px] bg-zeno-card border border-zeno-border rounded px-2 py-1"
             value={nuevoEvento.nombre}
             onChange={(e) => setNuevoEvento({ ...nuevoEvento, nombre: e.target.value })}
             required
+          />
+          <input
+            type="text"
+            placeholder="Lugar"
+            className="flex-1 min-w-[120px] bg-zeno-card border border-zeno-border rounded px-2 py-1"
+            value={nuevoEvento.lugar}
+            onChange={(e) => setNuevoEvento({ ...nuevoEvento, lugar: e.target.value })}
+          />
+          <input
+            type="text"
+            placeholder="Hora (ej. 3:00 PM)"
+            className="w-32 bg-zeno-card border border-zeno-border rounded px-2 py-1"
+            value={nuevoEvento.hora}
+            onChange={(e) => setNuevoEvento({ ...nuevoEvento, hora: e.target.value })}
           />
           <input
             type="datetime-local"
@@ -67,6 +100,13 @@ export default function EventosList({ eventos, onSelect }) {
             onChange={(e) => setNuevoEvento({ ...nuevoEvento, fecha: e.target.value })}
             required
           />
+          <input
+            type="url"
+            placeholder="Enlace WhatsApp (opcional)"
+            className="flex-1 min-w-[200px] bg-zeno-card border border-zeno-border rounded px-2 py-1"
+            value={nuevoEvento.whatsapp_link}
+            onChange={(e) => setNuevoEvento({ ...nuevoEvento, whatsapp_link: e.target.value })}
+          />
           <button type="submit" className="bg-zeno-blue px-3 py-1 rounded">Guardar</button>
         </form>
       )}
@@ -74,59 +114,97 @@ export default function EventosList({ eventos, onSelect }) {
       <div className="space-y-2">
         {eventosArray.map((ev) => (
           <div key={ev.id} className="p-3 rounded-lg bg-zeno-dark border border-zeno-border hover:border-zeno-blue transition">
-            <div className="flex justify-between items-start">
-              <div className="flex-1 cursor-pointer" onClick={() => onSelect(ev)}>
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className="font-semibold">{ev.nombre}</span>
-                  <span className={`text-xs px-2 py-0.5 rounded ${ev.estado === 'ACTIVO' ? 'bg-green-800' : 'bg-red-800'}`}>
-                    {ev.estado}
-                  </span>
-                </div>
-                <p className="text-sm text-zeno-text-sec">{new Date(ev.fecha).toLocaleDateString()}</p>
-                {ev.whatsapp_link && (
-                  <p className="text-xs text-zeno-blue truncate mt-1">📱 WhatsApp: {ev.whatsapp_link}</p>
-                )}
-              </div>
-              <button
-                onClick={() => {
-                  setEditandoWhatsApp(ev.id)
-                  setNuevoLink(ev.whatsapp_link || '')
-                }}
-                className="ml-2 text-zeno-orange hover:text-zeno-blue text-sm"
-                title="Editar enlace de WhatsApp"
-              >
-                ✏️
-              </button>
-            </div>
-
-            {editandoWhatsApp === ev.id && (
-              <div className="mt-2 flex gap-2 items-center">
+            {editandoEvento === ev.id ? (
+              <div className="space-y-2">
+                <input
+                  type="text"
+                  className="w-full bg-zeno-card border border-zeno-border rounded px-2 py-1"
+                  value={editData.nombre ?? ev.nombre}
+                  onChange={(e) => setEditData({ ...editData, nombre: e.target.value })}
+                  placeholder="Nombre"
+                />
+                <input
+                  type="text"
+                  className="w-full bg-zeno-card border border-zeno-border rounded px-2 py-1"
+                  value={editData.lugar ?? ev.lugar}
+                  onChange={(e) => setEditData({ ...editData, lugar: e.target.value })}
+                  placeholder="Lugar"
+                />
+                <input
+                  type="text"
+                  className="w-full bg-zeno-card border border-zeno-border rounded px-2 py-1"
+                  value={editData.hora ?? ev.hora}
+                  onChange={(e) => setEditData({ ...editData, hora: e.target.value })}
+                  placeholder="Hora"
+                />
+                <input
+                  type="datetime-local"
+                  className="w-full bg-zeno-card border border-zeno-border rounded px-2 py-1"
+                  value={editData.fecha ?? ev.fecha.slice(0, 16)}
+                  onChange={(e) => setEditData({ ...editData, fecha: e.target.value })}
+                />
                 <input
                   type="url"
-                  placeholder="https://chat.whatsapp.com/..."
-                  className="flex-1 bg-zeno-card border border-zeno-border rounded px-2 py-1 text-sm text-zeno-text"
-                  value={nuevoLink}
-                  onChange={(e) => setNuevoLink(e.target.value)}
+                  placeholder="Enlace WhatsApp"
+                  className="w-full bg-zeno-card border border-zeno-border rounded px-2 py-1"
+                  value={editData.whatsapp_link ?? ev.whatsapp_link}
+                  onChange={(e) => setEditData({ ...editData, whatsapp_link: e.target.value })}
                 />
-                <button
-                  onClick={() => actualizarWhatsApp(ev.id, nuevoLink)}
-                  className="bg-zeno-blue px-2 py-1 rounded text-sm"
-                >
-                  Guardar
-                </button>
-                <button
-                  onClick={() => setEditandoWhatsApp(null)}
-                  className="bg-gray-600 px-2 py-1 rounded text-sm"
-                >
-                  Cancelar
-                </button>
+                <div className="flex gap-2">
+                  <button onClick={() => actualizarEvento(ev.id)} className="bg-zeno-blue px-3 py-1 rounded">Guardar</button>
+                  <button onClick={() => setEditandoEvento(null)} className="bg-gray-600 px-3 py-1 rounded">Cancelar</button>
+                </div>
               </div>
+            ) : (
+              <>
+                <div className="flex justify-between items-start">
+                  <div className="flex-1 cursor-pointer" onClick={() => onSelect(ev)}>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="font-semibold">{ev.nombre}</span>
+                      <span className={`text-xs px-2 py-0.5 rounded ${ev.estado === 'ACTIVO' ? 'bg-green-800' : 'bg-red-800'}`}>
+                        {ev.estado}
+                      </span>
+                      {ev.eliminado && <span className="text-xs bg-red-600 px-2 py-0.5 rounded">Eliminado</span>}
+                    </div>
+                    {ev.lugar && <p className="text-sm text-zeno-text-sec">📍 {ev.lugar}</p>}
+                    {ev.hora && <p className="text-sm text-zeno-text-sec">🕒 {ev.hora}</p>}
+                    <p className="text-sm text-zeno-text-sec">📅 {new Date(ev.fecha).toLocaleDateString()}</p>
+                    {ev.whatsapp_link && <p className="text-xs text-zeno-blue truncate mt-1">📱 WhatsApp: {ev.whatsapp_link}</p>}
+                  </div>
+                  <div className="flex gap-1">
+                    {!ev.eliminado ? (
+                      <button
+                        onClick={() => {
+                          setEditandoEvento(ev.id)
+                          setEditData({
+                            nombre: ev.nombre,
+                            lugar: ev.lugar || '',
+                            hora: ev.hora || '',
+                            fecha: ev.fecha.slice(0, 16),
+                            whatsapp_link: ev.whatsapp_link || ''
+                          })
+                        }}
+                        className="text-zeno-orange hover:text-zeno-blue text-sm px-1"
+                      >
+                        ✏️
+                      </button>
+                    ) : null}
+                    {!ev.eliminado ? (
+                      <button onClick={() => eliminarEvento(ev.id)} className="text-red-500 hover:text-red-700 text-sm px-1">
+                        🗑️
+                      </button>
+                    ) : (
+                      <button onClick={() => restaurarEvento(ev.id)} className="text-green-500 hover:text-green-700 text-sm px-1">
+                        🔄 Restaurar
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </>
             )}
           </div>
         ))}
-        {eventosArray.length === 0 && (
-          <p className="text-zeno-text-sec text-center">No hay eventos</p>
-        )}
+        {eventosArray.length === 0 && <p className="text-zeno-text-sec text-center">No hay eventos</p>}
       </div>
     </div>
   )
