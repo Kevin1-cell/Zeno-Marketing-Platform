@@ -2,6 +2,7 @@ import { useState } from 'react'
 import axios from 'axios'
 import { useAuthStore } from '../store/authStore'
 import toast from 'react-hot-toast'
+import EventCard from './EventCard'
 
 export default function EventosList({ eventos, onSelect }) {
   const { token } = useAuthStore()
@@ -58,23 +59,23 @@ export default function EventosList({ eventos, onSelect }) {
   const eventosArray = Array.isArray(eventos) ? eventos : []
 
   return (
-    <div className="bg-zeno-card rounded-lg p-4 border border-zeno-border">
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-bold text-zeno-blue">Eventos</h2>
+    <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-xl font-bold text-slate-800">Eventos</h2>
         <button
           onClick={() => setCreando(!creando)}
-          className="bg-zeno-orange px-3 py-1 rounded-lg text-sm"
+          className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl text-sm font-medium shadow-sm transition"
         >
           + Nuevo evento
         </button>
       </div>
 
       {creando && (
-        <form onSubmit={crearEvento} className="mb-4 p-3 bg-zeno-dark rounded-lg flex flex-wrap gap-2">
+        <form onSubmit={crearEvento} className="mb-6 p-4 bg-slate-50 rounded-xl flex flex-wrap gap-3">
           <input
             type="text"
             placeholder="Nombre *"
-            className="flex-1 min-w-[120px] bg-zeno-card border border-zeno-border rounded px-2 py-1"
+            className="flex-1 min-w-[120px] border rounded-lg px-3 py-2"
             value={nuevoEvento.nombre}
             onChange={(e) => setNuevoEvento({ ...nuevoEvento, nombre: e.target.value })}
             required
@@ -82,20 +83,20 @@ export default function EventosList({ eventos, onSelect }) {
           <input
             type="text"
             placeholder="Lugar"
-            className="flex-1 min-w-[120px] bg-zeno-card border border-zeno-border rounded px-2 py-1"
+            className="flex-1 min-w-[120px] border rounded-lg px-3 py-2"
             value={nuevoEvento.lugar}
             onChange={(e) => setNuevoEvento({ ...nuevoEvento, lugar: e.target.value })}
           />
           <input
             type="text"
             placeholder="Hora (ej. 3:00 PM)"
-            className="w-32 bg-zeno-card border border-zeno-border rounded px-2 py-1"
+            className="w-32 border rounded-lg px-3 py-2"
             value={nuevoEvento.hora}
             onChange={(e) => setNuevoEvento({ ...nuevoEvento, hora: e.target.value })}
           />
           <input
             type="datetime-local"
-            className="bg-zeno-card border border-zeno-border rounded px-2 py-1"
+            className="border rounded-lg px-3 py-2"
             value={nuevoEvento.fecha}
             onChange={(e) => setNuevoEvento({ ...nuevoEvento, fecha: e.target.value })}
             required
@@ -103,108 +104,42 @@ export default function EventosList({ eventos, onSelect }) {
           <input
             type="url"
             placeholder="Enlace WhatsApp (opcional)"
-            className="flex-1 min-w-[200px] bg-zeno-card border border-zeno-border rounded px-2 py-1"
+            className="flex-1 min-w-[150px] border rounded-lg px-3 py-2"
             value={nuevoEvento.whatsapp_link}
             onChange={(e) => setNuevoEvento({ ...nuevoEvento, whatsapp_link: e.target.value })}
           />
-          <button type="submit" className="bg-zeno-blue px-3 py-1 rounded">Guardar</button>
+          <button type="submit" className="bg-indigo-600 text-white px-4 py-2 rounded-lg">Guardar</button>
         </form>
       )}
 
-      <div className="space-y-2">
-        {eventosArray.map((ev) => (
-          <div key={ev.id} className="p-3 rounded-lg bg-zeno-dark border border-zeno-border hover:border-zeno-blue transition">
-            {editandoEvento === ev.id ? (
-              <div className="space-y-2">
-                <input
-                  type="text"
-                  className="w-full bg-zeno-card border border-zeno-border rounded px-2 py-1"
-                  value={editData.nombre ?? ev.nombre}
-                  onChange={(e) => setEditData({ ...editData, nombre: e.target.value })}
-                  placeholder="Nombre"
-                />
-                <input
-                  type="text"
-                  className="w-full bg-zeno-card border border-zeno-border rounded px-2 py-1"
-                  value={editData.lugar ?? ev.lugar}
-                  onChange={(e) => setEditData({ ...editData, lugar: e.target.value })}
-                  placeholder="Lugar"
-                />
-                <input
-                  type="text"
-                  className="w-full bg-zeno-card border border-zeno-border rounded px-2 py-1"
-                  value={editData.hora ?? ev.hora}
-                  onChange={(e) => setEditData({ ...editData, hora: e.target.value })}
-                  placeholder="Hora"
-                />
-                <input
-                  type="datetime-local"
-                  className="w-full bg-zeno-card border border-zeno-border rounded px-2 py-1"
-                  value={editData.fecha ?? ev.fecha.slice(0, 16)}
-                  onChange={(e) => setEditData({ ...editData, fecha: e.target.value })}
-                />
-                <input
-                  type="url"
-                  placeholder="Enlace WhatsApp"
-                  className="w-full bg-zeno-card border border-zeno-border rounded px-2 py-1"
-                  value={editData.whatsapp_link ?? ev.whatsapp_link}
-                  onChange={(e) => setEditData({ ...editData, whatsapp_link: e.target.value })}
-                />
-                <div className="flex gap-2">
-                  <button onClick={() => actualizarEvento(ev.id)} className="bg-zeno-blue px-3 py-1 rounded">Guardar</button>
-                  <button onClick={() => setEditandoEvento(null)} className="bg-gray-600 px-3 py-1 rounded">Cancelar</button>
-                </div>
-              </div>
-            ) : (
-              <>
-                <div className="flex justify-between items-start">
-                  <div className="flex-1 cursor-pointer" onClick={() => onSelect(ev)}>
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className="font-semibold">{ev.nombre}</span>
-                      <span className={`text-xs px-2 py-0.5 rounded ${ev.estado === 'ACTIVO' ? 'bg-green-800' : 'bg-red-800'}`}>
-                        {ev.estado}
-                      </span>
-                      {ev.eliminado && <span className="text-xs bg-red-600 px-2 py-0.5 rounded">Eliminado</span>}
-                    </div>
-                    {ev.lugar && <p className="text-sm text-zeno-text-sec">📍 {ev.lugar}</p>}
-                    {ev.hora && <p className="text-sm text-zeno-text-sec">🕒 {ev.hora}</p>}
-                    <p className="text-sm text-zeno-text-sec">📅 {new Date(ev.fecha).toLocaleDateString()}</p>
-                    {ev.whatsapp_link && <p className="text-xs text-zeno-blue truncate mt-1">📱 WhatsApp: {ev.whatsapp_link}</p>}
-                  </div>
-                  <div className="flex gap-1">
-                    {!ev.eliminado ? (
-                      <button
-                        onClick={() => {
-                          setEditandoEvento(ev.id)
-                          setEditData({
-                            nombre: ev.nombre,
-                            lugar: ev.lugar || '',
-                            hora: ev.hora || '',
-                            fecha: ev.fecha.slice(0, 16),
-                            whatsapp_link: ev.whatsapp_link || ''
-                          })
-                        }}
-                        className="text-zeno-orange hover:text-zeno-blue text-sm px-1"
-                      >
-                        ✏️
-                      </button>
-                    ) : null}
-                    {!ev.eliminado ? (
-                      <button onClick={() => eliminarEvento(ev.id)} className="text-red-500 hover:text-red-700 text-sm px-1">
-                        🗑️
-                      </button>
-                    ) : (
-                      <button onClick={() => restaurarEvento(ev.id)} className="text-green-500 hover:text-green-700 text-sm px-1">
-                        🔄 Restaurar
-                      </button>
-                    )}
-                  </div>
-                </div>
-              </>
-            )}
-          </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {eventosArray.map(ev => (
+          <EventCard
+            key={ev.id}
+            event={ev}
+            onSelect={onSelect}
+            onEdit={(event) => {
+              setEditandoEvento(event.id)
+              setEditData({
+                nombre: event.nombre,
+                lugar: event.lugar || '',
+                hora: event.hora || '',
+                fecha: event.fecha.slice(0, 16),
+                whatsapp_link: event.whatsapp_link || ''
+              })
+            }}
+            onDelete={eliminarEvento}
+            onRestore={restaurarEvento}
+            isEditing={editandoEvento === ev.id}
+            editData={editData}
+            setEditData={setEditData}
+            onSaveEdit={actualizarEvento}
+            onCancelEdit={() => setEditandoEvento(null)}
+          />
         ))}
-        {eventosArray.length === 0 && <p className="text-zeno-text-sec text-center">No hay eventos</p>}
+        {eventosArray.length === 0 && (
+          <div className="col-span-full text-center py-8 text-slate-500">No hay eventos</div>
+        )}
       </div>
     </div>
   )
