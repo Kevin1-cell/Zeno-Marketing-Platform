@@ -34,6 +34,21 @@ export default function EventCard({ event, onSelect, onEdit, onDelete, onRestore
             value={editData.fecha ?? event.fecha.slice(0, 16)}
             onChange={(e) => setEditData({ ...editData, fecha: e.target.value })}
           />
+          <input
+            type="url"
+            className="w-full px-3 py-2 border rounded-lg"
+            placeholder="Enlace de WhatsApp (opcional)"
+            value={editData.whatsapp_link ?? event.whatsapp_link ?? ''}
+            onChange={(e) => setEditData({ ...editData, whatsapp_link: e.target.value })}
+          />
+          <input
+            type="number"
+            min="1"
+            className="w-full px-3 py-2 border rounded-lg"
+            placeholder="Aforo máximo (opcional)"
+            value={editData.aforo_maximo ?? (event.aforo_maximo || '')}
+            onChange={(e) => setEditData({ ...editData, aforo_maximo: e.target.value })}
+          />
           <div className="flex gap-2 mt-2">
             <button onClick={() => onSaveEdit(event.id)} className="bg-indigo-600 text-white px-3 py-1 rounded">Guardar</button>
             <button onClick={onCancelEdit} className="bg-gray-300 px-3 py-1 rounded">Cancelar</button>
@@ -85,7 +100,14 @@ export default function EventCard({ event, onSelect, onEdit, onDelete, onRestore
       </div>
       {event.lugar && <p className="text-sm text-slate-500 mb-1">📍 {event.lugar}</p>}
       {event.hora && <p className="text-sm text-slate-500">🕒 {event.hora}</p>}
-      {event.whatsapp_link && <p className="text-xs text-indigo-500 truncate mt-2">📱 WhatsApp</p>}
+      {event.whatsapp_link && (
+        <p className="text-xs text-indigo-500 truncate mt-2">
+          📱 WhatsApp: {event.whatsapp_link.length > 30 ? event.whatsapp_link.substring(0, 30) + '…' : event.whatsapp_link}
+        </p>
+      )}
+      {event.aforo_maximo && (
+        <p className="text-xs text-slate-500 mt-1">🎟️ Aforo máximo: {event.aforo_maximo}</p>
+      )}
       <div className="flex items-center text-indigo-600 font-semibold text-sm mt-3 group-hover:gap-2 transition-all">
         Ver detalles <ArrowRight size={16} className="ml-1" />
       </div>

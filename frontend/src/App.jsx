@@ -3,6 +3,7 @@ import { useAuthStore } from './store/authStore'
 import Registro from './pages/Registro'
 import Login from './pages/Login'
 import Dashboard from './pages/Dashboard'
+import EventoDetalle from './pages/EventoDetalle'
 import SorteoDetalle from './pages/SorteoDetalle'
 import ParticipantesPage from './pages/ParticipantesPage'
 import ProtectedRoute from './components/ProtectedRoute'
@@ -16,6 +17,11 @@ function App() {
       <Route path="/dashboard" element={
         <ProtectedRoute>
           <Dashboard />
+        </ProtectedRoute>
+      } />
+      <Route path="/evento/:eventoId" element={
+        <ProtectedRoute>
+          <EventoDetalle />
         </ProtectedRoute>
       } />
       <Route path="/sorteos/:id" element={

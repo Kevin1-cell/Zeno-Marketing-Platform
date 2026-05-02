@@ -9,7 +9,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.RegistroParticipanteDto = exports.Nivel = void 0;
+exports.RegistroParticipanteDto = exports.TipoParticipante = exports.Nivel = void 0;
 const class_validator_1 = require("class-validator");
 var Nivel;
 (function (Nivel) {
@@ -17,7 +17,15 @@ var Nivel;
     Nivel["C2"] = "C2";
     Nivel["C3"] = "C3";
 })(Nivel || (exports.Nivel = Nivel = {}));
+var TipoParticipante;
+(function (TipoParticipante) {
+    TipoParticipante["EMPLEADO"] = "EMPLEADO";
+    TipoParticipante["INVITADO"] = "INVITADO";
+})(TipoParticipante || (exports.TipoParticipante = TipoParticipante = {}));
 class RegistroParticipanteDto {
+    constructor() {
+        this.tipo = TipoParticipante.EMPLEADO;
+    }
 }
 exports.RegistroParticipanteDto = RegistroParticipanteDto;
 __decorate([
@@ -32,6 +40,7 @@ __decorate([
 ], RegistroParticipanteDto.prototype, "telefon", void 0);
 __decorate([
     (0, class_validator_1.IsEnum)(Nivel),
+    (0, class_validator_1.IsOptional)(),
     __metadata("design:type", String)
 ], RegistroParticipanteDto.prototype, "nivel", void 0);
 __decorate([
@@ -39,4 +48,19 @@ __decorate([
     (0, class_validator_1.IsNotEmpty)(),
     __metadata("design:type", String)
 ], RegistroParticipanteDto.prototype, "evento_id", void 0);
+__decorate([
+    (0, class_validator_1.IsEnum)(TipoParticipante),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], RegistroParticipanteDto.prototype, "tipo", void 0);
+__decorate([
+    (0, class_validator_1.IsBoolean)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", Boolean)
+], RegistroParticipanteDto.prototype, "se_unio", void 0);
+__decorate([
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], RegistroParticipanteDto.prototype, "recompensa", void 0);
 //# sourceMappingURL=registro-participante.dto.js.map

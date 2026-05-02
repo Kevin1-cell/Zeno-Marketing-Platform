@@ -1,4 +1,4 @@
-import { IsString, IsOptional, IsDateString, IsEnum } from 'class-validator';
+import { IsString, IsOptional, IsDateString, IsEnum, IsInt, Min } from 'class-validator';
 
 export enum EstadoEvento {
   ACTIVO = 'ACTIVO',
@@ -13,6 +13,14 @@ export class CrearEventoDto {
   @IsString()
   descripcion?: string;
 
+  @IsOptional()
+  @IsString()
+  lugar?: string;
+
+  @IsOptional()
+  @IsString()
+  hora?: string;
+
   @IsDateString()
   fecha: string;
 
@@ -23,4 +31,9 @@ export class CrearEventoDto {
   @IsOptional()
   @IsString()
   whatsapp_link?: string;
+
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  aforo_maximo?: number;
 }

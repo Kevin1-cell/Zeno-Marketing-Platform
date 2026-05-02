@@ -30,6 +30,12 @@ let SorteosController = class SorteosController {
     async crear(data) {
         return this.sorteosService.crear(data);
     }
+    async listar(evento_id) {
+        return this.sorteosService.listarPorEvento(evento_id);
+    }
+    async obtener(id) {
+        return this.sorteosService.obtenerPorId(id);
+    }
     async agregarPremio(data) {
         return this.sorteosService.agregarPremio(data);
     }
@@ -53,9 +59,6 @@ let SorteosController = class SorteosController {
     async finalizar(id) {
         return this.sorteosService.finalizar(id);
     }
-    async listar(evento_id) {
-        return this.sorteosService.listarPorEvento(evento_id);
-    }
     async resumen(id) {
         return this.sorteosService.resumen(id);
     }
@@ -69,6 +72,22 @@ __decorate([
     __metadata("design:paramtypes", [crear_sorteo_dto_1.CrearSorteoDto]),
     __metadata("design:returntype", Promise)
 ], SorteosController.prototype, "crear", null);
+__decorate([
+    (0, common_1.Get)(),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    __param(0, (0, common_1.Query)('evento_id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", Promise)
+], SorteosController.prototype, "listar", null);
+__decorate([
+    (0, common_1.Get)(':id'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    __param(0, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", Promise)
+], SorteosController.prototype, "obtener", null);
 __decorate([
     (0, common_1.Post)('premios'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
@@ -117,14 +136,6 @@ __decorate([
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", Promise)
 ], SorteosController.prototype, "finalizar", null);
-__decorate([
-    (0, common_1.Get)(),
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
-    __param(0, (0, common_1.Query)('evento_id')),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
-    __metadata("design:returntype", Promise)
-], SorteosController.prototype, "listar", null);
 __decorate([
     (0, common_1.Get)(':id/resumen'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),

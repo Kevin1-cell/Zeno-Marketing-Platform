@@ -67,14 +67,20 @@ let SorteosService = class SorteosService {
             where,
             select: { id: true, numero_asignado: true, nombre_completo: true, telefon: true },
         });
-        const ganadoresPrevios = await this.prisma.ganador.findMany({
-            where: { sorteo_id: sorteoId },
+        const ganadoresEvento = await this.prisma.ganador.findMany({
+            where: {
+                sorteo: {
+                    evento_id: sorteo.evento_id,
+                },
+            },
             select: { numero_ganador: true },
         });
-        const numerosGanados = new Set(ganadoresPrevios.map(g => g.numero_ganador));
+        const numerosGanadosPermanentes = new Set(ganadoresEvento.map(g => g.numero_ganador));
         const tempExclusions = this.exclusionesTemporales.get(sorteoId) || new Set();
         const elegibles = participantes
-            .filter(p => p.numero_asignado !== null && !numerosGanados.has(p.numero_asignado) && !tempExclusions.has(p.numero_asignado))
+            .filter(p => p.numero_asignado !== null &&
+            !numerosGanadosPermanentes.has(p.numero_asignado) &&
+            !tempExclusions.has(p.numero_asignado))
             .map(p => ({
             numero: p.numero_asignado,
             nombre: p.nombre_completo,
@@ -104,7 +110,7 @@ let SorteosService = class SorteosService {
             where: { sorteo_id, numero_ganador },
         });
         if (yaGanador) {
-            throw new common_1.ConflictException('Este número ya tiene un ganador asignado');
+            throw new common_1.ConflictException('Este número ya tiene un ganador asignado en este sorteo');
         }
         let premioAsignado = null;
         if (sorteo.modo_premios === 'PRE_CARGA') {
@@ -169,6 +175,19 @@ let SorteosService = class SorteosService {
             where: { evento_id },
             include: { premios: true, ganadores: { include: { participante: true } } },
         });
+    }
+    async obtenerPorId(id) {
+        const sorteo = await this.prisma.sorteo.findUnique({
+            where: { id },
+            include: {
+                evento: true,
+                premios: true,
+                ganadores: { include: { participante: true, premio: true } }
+            }
+        });
+        if (!sorteo)
+            throw new common_1.NotFoundException('Sorteo no encontrado');
+        return sorteo;
     }
     async resumen(sorteoId) {
         const sorteo = await this.prisma.sorteo.findUnique({

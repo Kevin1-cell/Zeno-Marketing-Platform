@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Put, Patch, Body, Param, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Put, Patch, Delete, Body, Param, Query, UseGuards, NotFoundException } from '@nestjs/common';
 import { EventsService } from './events.service';
 import { CrearEventoDto } from '../dto/crear-evento.dto';
 import { EditarEventoDto } from '../dto/editar-evento.dto';
@@ -9,9 +9,16 @@ import { EstadoEvento } from '@prisma/client';
 @Controller('eventos')
 export class EventsController {
   constructor(
-    private eventsService: EventsService,
-    private eventsGateway: EventsGateway,
+    private readonly eventsService: EventsService,
+    private readonly eventsGateway: EventsGateway,
   ) {}
+
+  // Endpoint público para obtener TODOS los eventos activos (sin autenticación)
+  @Get('activos')
+  async getEventosActivos() {
+    const eventos = await this.eventsService.listar(EstadoEvento.ACTIVO, false);
+    return eventos;
+  }
 
   @Post()
   @UseGuards(JwtAuthGuard)
@@ -41,10 +48,21 @@ export class EventsController {
   @UseGuards(JwtAuthGuard)
   async cambiarEstado(@Param('id') id: string, @Body('estado') estado: EstadoEvento) {
     const evento = await this.eventsService.cambiarEstado(id, estado);
-    // Opcional: emitir actualización de estadísticas
     const stats = await this.eventsService.obtenerEstadisticas(id);
     this.eventsGateway.emitStatsUpdate(id, stats);
     return evento;
+  }
+
+  @Delete(':id')
+  @UseGuards(JwtAuthGuard)
+  async eliminar(@Param('id') id: string) {
+    return this.eventsService.eliminarLogico(id);
+  }
+
+  @Patch(':id/restaurar')
+  @UseGuards(JwtAuthGuard)
+  async restaurar(@Param('id') id: string) {
+    return this.eventsService.restaurar(id);
   }
 
   @Get(':id/estadisticas')

@@ -9,10 +9,10 @@ export declare class SorteosService {
     crear(data: CrearSorteoDto): Promise<{
         id: string;
         nombre: string;
-        nivel_filtro: import("@prisma/client").$Enums.NivelFilter;
-        modo_premios: import("@prisma/client").$Enums.ModoPremio;
         estado: import("@prisma/client").$Enums.EstadoSorteo;
         created_at: Date;
+        nivel_filtro: import("@prisma/client").$Enums.NivelFilter;
+        modo_premios: import("@prisma/client").$Enums.ModoPremio;
         evento_id: string;
     }>;
     agregarPremio(data: AgregarPremioDto): Promise<{
@@ -35,6 +35,19 @@ export declare class SorteosService {
         participante_id: string;
     }>;
     confirmarGanador(data: ConfirmarGanadorDto): Promise<{
+        participante: {
+            id: string;
+            created_at: Date;
+            evento_id: string;
+            nombre_completo: string;
+            telefon: string;
+            nivel: import("@prisma/client").$Enums.Nivel | null;
+            confirmado: boolean;
+            numero_asignado: number | null;
+            tipo: import("@prisma/client").$Enums.TipoParticipante;
+            se_unio: boolean | null;
+            recompensa: string | null;
+        };
         premio: {
             id: string;
             descripcion: string;
@@ -42,16 +55,6 @@ export declare class SorteosService {
             asignado: boolean;
             sorteo_id: string;
         } | null;
-        participante: {
-            id: string;
-            created_at: Date;
-            evento_id: string;
-            nombre_completo: string;
-            telefon: string;
-            nivel: import("@prisma/client").$Enums.Nivel;
-            confirmado: boolean;
-            numero_asignado: number | null;
-        };
     } & {
         id: string;
         sorteo_id: string;
@@ -82,9 +85,12 @@ export declare class SorteosService {
                 evento_id: string;
                 nombre_completo: string;
                 telefon: string;
-                nivel: import("@prisma/client").$Enums.Nivel;
+                nivel: import("@prisma/client").$Enums.Nivel | null;
                 confirmado: boolean;
                 numero_asignado: number | null;
+                tipo: import("@prisma/client").$Enums.TipoParticipante;
+                se_unio: boolean | null;
+                recompensa: string | null;
             };
         } & {
             id: string;
@@ -98,21 +104,25 @@ export declare class SorteosService {
     } & {
         id: string;
         nombre: string;
-        nivel_filtro: import("@prisma/client").$Enums.NivelFilter;
-        modo_premios: import("@prisma/client").$Enums.ModoPremio;
         estado: import("@prisma/client").$Enums.EstadoSorteo;
         created_at: Date;
+        nivel_filtro: import("@prisma/client").$Enums.NivelFilter;
+        modo_premios: import("@prisma/client").$Enums.ModoPremio;
         evento_id: string;
     })[]>;
-    resumen(sorteoId: string): Promise<{
+    obtenerPorId(id: string): Promise<{
         evento: {
             id: string;
             nombre: string;
-            estado: import("@prisma/client").$Enums.EstadoEvento;
-            created_at: Date;
             descripcion: string | null;
+            lugar: string | null;
+            hora: string | null;
             fecha: Date;
+            estado: import("@prisma/client").$Enums.EstadoEvento;
             whatsapp_link: string | null;
+            aforo_maximo: number | null;
+            eliminado: boolean;
+            created_at: Date;
         };
         premios: {
             id: string;
@@ -122,6 +132,19 @@ export declare class SorteosService {
             sorteo_id: string;
         }[];
         ganadores: ({
+            participante: {
+                id: string;
+                created_at: Date;
+                evento_id: string;
+                nombre_completo: string;
+                telefon: string;
+                nivel: import("@prisma/client").$Enums.Nivel | null;
+                confirmado: boolean;
+                numero_asignado: number | null;
+                tipo: import("@prisma/client").$Enums.TipoParticipante;
+                se_unio: boolean | null;
+                recompensa: string | null;
+            };
             premio: {
                 id: string;
                 descripcion: string;
@@ -129,16 +152,6 @@ export declare class SorteosService {
                 asignado: boolean;
                 sorteo_id: string;
             } | null;
-            participante: {
-                id: string;
-                created_at: Date;
-                evento_id: string;
-                nombre_completo: string;
-                telefon: string;
-                nivel: import("@prisma/client").$Enums.Nivel;
-                confirmado: boolean;
-                numero_asignado: number | null;
-            };
         } & {
             id: string;
             sorteo_id: string;
@@ -151,10 +164,70 @@ export declare class SorteosService {
     } & {
         id: string;
         nombre: string;
-        nivel_filtro: import("@prisma/client").$Enums.NivelFilter;
-        modo_premios: import("@prisma/client").$Enums.ModoPremio;
         estado: import("@prisma/client").$Enums.EstadoSorteo;
         created_at: Date;
+        nivel_filtro: import("@prisma/client").$Enums.NivelFilter;
+        modo_premios: import("@prisma/client").$Enums.ModoPremio;
+        evento_id: string;
+    }>;
+    resumen(sorteoId: string): Promise<{
+        evento: {
+            id: string;
+            nombre: string;
+            descripcion: string | null;
+            lugar: string | null;
+            hora: string | null;
+            fecha: Date;
+            estado: import("@prisma/client").$Enums.EstadoEvento;
+            whatsapp_link: string | null;
+            aforo_maximo: number | null;
+            eliminado: boolean;
+            created_at: Date;
+        };
+        premios: {
+            id: string;
+            descripcion: string;
+            orden: number;
+            asignado: boolean;
+            sorteo_id: string;
+        }[];
+        ganadores: ({
+            participante: {
+                id: string;
+                created_at: Date;
+                evento_id: string;
+                nombre_completo: string;
+                telefon: string;
+                nivel: import("@prisma/client").$Enums.Nivel | null;
+                confirmado: boolean;
+                numero_asignado: number | null;
+                tipo: import("@prisma/client").$Enums.TipoParticipante;
+                se_unio: boolean | null;
+                recompensa: string | null;
+            };
+            premio: {
+                id: string;
+                descripcion: string;
+                orden: number;
+                asignado: boolean;
+                sorteo_id: string;
+            } | null;
+        } & {
+            id: string;
+            sorteo_id: string;
+            participante_id: string;
+            premio_id: string | null;
+            premio_descripcion: string | null;
+            numero_ganador: number;
+            confirmado_en: Date;
+        })[];
+    } & {
+        id: string;
+        nombre: string;
+        estado: import("@prisma/client").$Enums.EstadoSorteo;
+        created_at: Date;
+        nivel_filtro: import("@prisma/client").$Enums.NivelFilter;
+        modo_premios: import("@prisma/client").$Enums.ModoPremio;
         evento_id: string;
     }>;
 }

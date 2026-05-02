@@ -48,6 +48,7 @@ export class SorteosService {
     });
     if (!sorteo) throw new NotFoundException('Sorteo no encontrado');
 
+    // 1. Participantes confirmados del evento (con filtro de nivel del sorteo)
     const where: any = {
       evento_id: sorteo.evento_id,
       confirmado: true,
@@ -60,16 +61,26 @@ export class SorteosService {
       select: { id: true, numero_asignado: true, nombre_completo: true, telefon: true },
     });
 
-    const ganadoresPrevios = await this.prisma.ganador.findMany({
-      where: { sorteo_id: sorteoId },
+    // 2. Ganadores PERMANENTES: cualquier número que haya ganado en CUALQUIER sorteo del mismo evento
+    const ganadoresEvento = await this.prisma.ganador.findMany({
+      where: {
+        sorteo: {
+          evento_id: sorteo.evento_id,
+        },
+      },
       select: { numero_ganador: true },
     });
-    const numerosGanados = new Set(ganadoresPrevios.map(g => g.numero_ganador));
+    const numerosGanadosPermanentes = new Set(ganadoresEvento.map(g => g.numero_ganador));
 
+    // 3. Exclusiones temporales (solo para este sorteo, por "Repetir")
     const tempExclusions = this.exclusionesTemporales.get(sorteoId) || new Set();
 
     const elegibles = participantes
-      .filter(p => p.numero_asignado !== null && !numerosGanados.has(p.numero_asignado) && !tempExclusions.has(p.numero_asignado))
+      .filter(p => 
+        p.numero_asignado !== null && 
+        !numerosGanadosPermanentes.has(p.numero_asignado) && 
+        !tempExclusions.has(p.numero_asignado)
+      )
       .map(p => ({
         numero: p.numero_asignado as number,
         nombre: p.nombre_completo,
@@ -99,14 +110,15 @@ export class SorteosService {
       throw new BadRequestException('Participante no válido o no confirmado');
     }
 
+    // Verificar que no haya ganado ya en este sorteo (doble check)
     const yaGanador = await this.prisma.ganador.findFirst({
       where: { sorteo_id, numero_ganador },
     });
     if (yaGanador) {
-      throw new ConflictException('Este número ya tiene un ganador asignado');
+      throw new ConflictException('Este número ya tiene un ganador asignado en este sorteo');
     }
 
-    // Modo PRE_CARGA: buscar siguiente premio no asignado
+    // Modo PRE_CARGA (no usado, pero lo dejamos)
     let premioAsignado: { id: string } | null = null;
     if (sorteo.modo_premios === 'PRE_CARGA') {
       const siguientePremio = await this.prisma.premio.findFirst({
@@ -135,12 +147,13 @@ export class SorteosService {
       include: { participante: true, premio: true },
     });
 
-    // Eliminar exclusión temporal de este número
+    // Limpiar exclusión temporal de este número (si existía)
     const tempEx = this.exclusionesTemporales.get(sorteo_id);
     if (tempEx) {
       tempEx.delete(numero_ganador);
     }
 
+    // Si el sorteo estaba pendiente, pasar a EN_CURSO
     if (sorteo.estado === 'PENDIENTE') {
       await this.prisma.sorteo.update({
         where: { id: sorteo_id },
@@ -177,6 +190,19 @@ export class SorteosService {
       where: { evento_id },
       include: { premios: true, ganadores: { include: { participante: true } } },
     });
+  }
+
+  async obtenerPorId(id: string) {
+    const sorteo = await this.prisma.sorteo.findUnique({
+      where: { id },
+      include: {
+        evento: true,
+        premios: true,
+        ganadores: { include: { participante: true, premio: true } }
+      }
+    });
+    if (!sorteo) throw new NotFoundException('Sorteo no encontrado');
+    return sorteo;
   }
 
   async resumen(sorteoId: string) {

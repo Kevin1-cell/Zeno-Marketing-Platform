@@ -21,9 +21,13 @@ model Evento {
   id            String       @id @default(uuid())
   nombre        String
   descripcion   String?
+  lugar         String?
+  hora          String?
   fecha         DateTime
   estado        EstadoEvento @default(ACTIVO)
   whatsapp_link String?
+  aforo_maximo  Int?          // 👈 nuevo campo: límite máximo de participantes (null = sin límite)
+  eliminado     Boolean      @default(false)
   created_at    DateTime     @default(now())
 
   participantes Participante[]
@@ -33,20 +37,29 @@ model Evento {
 }
 
 model Participante {
-  id              String   @id @default(uuid())
-  evento_id       String
-  nombre_completo String
-  telefon         String
-  nivel           Nivel
-  confirmado      Boolean  @default(false)
-  numero_asignado Int?     @unique
-  created_at      DateTime @default(now())
+  id               String   @id @default(uuid())
+  evento_id        String
+  nombre_completo  String
+  telefon          String
+  nivel            Nivel?
+  confirmado       Boolean  @default(false)
+  numero_asignado  Int?
+  tipo             TipoParticipante @default(EMPLEADO)
+  se_unio          Boolean?
+  recompensa       String?
+  created_at       DateTime @default(now())
 
-  evento    Evento    @relation(fields: [evento_id], references: [id])
+  evento   Evento   @relation(fields: [evento_id], references: [id])
   ganadores Ganador[]
 
   @@unique([telefon, evento_id])
+  @@unique([evento_id, numero_asignado])
   @@map("participantes")
+}
+
+enum TipoParticipante {
+  EMPLEADO
+  INVITADO
 }
 
 model Sorteo {

@@ -21,6 +21,18 @@ export class SorteosController {
     return this.sorteosService.crear(data);
   }
 
+  @Get()
+  @UseGuards(JwtAuthGuard)
+  async listar(@Query('evento_id') evento_id: string) {
+    return this.sorteosService.listarPorEvento(evento_id);
+  }
+
+  @Get(':id')
+  @UseGuards(JwtAuthGuard)
+  async obtener(@Param('id') id: string) {
+    return this.sorteosService.obtenerPorId(id);
+  }
+
   @Post('premios')
   @UseGuards(JwtAuthGuard)
   async agregarPremio(@Body() data: AgregarPremioDto) {
@@ -60,12 +72,6 @@ export class SorteosController {
   @UseGuards(JwtAuthGuard)
   async finalizar(@Param('id') id: string) {
     return this.sorteosService.finalizar(id);
-  }
-
-  @Get()
-  @UseGuards(JwtAuthGuard)
-  async listar(@Query('evento_id') evento_id: string) {
-    return this.sorteosService.listarPorEvento(evento_id);
   }
 
   @Get(':id/resumen')

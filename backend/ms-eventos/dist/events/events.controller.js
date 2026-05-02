@@ -25,6 +25,10 @@ let EventsController = class EventsController {
         this.eventsService = eventsService;
         this.eventsGateway = eventsGateway;
     }
+    async getEventosActivos() {
+        const eventos = await this.eventsService.listar(client_1.EstadoEvento.ACTIVO, false);
+        return eventos;
+    }
     async crear(data) {
         return this.eventsService.crear(data);
     }
@@ -43,11 +47,23 @@ let EventsController = class EventsController {
         this.eventsGateway.emitStatsUpdate(id, stats);
         return evento;
     }
+    async eliminar(id) {
+        return this.eventsService.eliminarLogico(id);
+    }
+    async restaurar(id) {
+        return this.eventsService.restaurar(id);
+    }
     async obtenerEstadisticas(id) {
         return this.eventsService.obtenerEstadisticas(id);
     }
 };
 exports.EventsController = EventsController;
+__decorate([
+    (0, common_1.Get)('activos'),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", Promise)
+], EventsController.prototype, "getEventosActivos", null);
 __decorate([
     (0, common_1.Post)(),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
@@ -90,6 +106,22 @@ __decorate([
     __metadata("design:paramtypes", [String, String]),
     __metadata("design:returntype", Promise)
 ], EventsController.prototype, "cambiarEstado", null);
+__decorate([
+    (0, common_1.Delete)(':id'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    __param(0, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", Promise)
+], EventsController.prototype, "eliminar", null);
+__decorate([
+    (0, common_1.Patch)(':id/restaurar'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    __param(0, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", Promise)
+], EventsController.prototype, "restaurar", null);
 __decorate([
     (0, common_1.Get)(':id/estadisticas'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),

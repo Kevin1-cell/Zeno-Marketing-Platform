@@ -9,45 +9,91 @@ export declare class EventsService {
         id: string;
         nombre: string;
         descripcion: string | null;
+        lugar: string | null;
+        hora: string | null;
         fecha: Date;
         estado: import("@prisma/client").$Enums.EstadoEvento;
         whatsapp_link: string | null;
+        aforo_maximo: number | null;
+        eliminado: boolean;
         created_at: Date;
     }>;
-    listar(estado?: EstadoEvento): Promise<{
+    listar(estado?: EstadoEvento, incluirEliminados?: boolean): Promise<{
         id: string;
         nombre: string;
         descripcion: string | null;
+        lugar: string | null;
+        hora: string | null;
         fecha: Date;
         estado: import("@prisma/client").$Enums.EstadoEvento;
         whatsapp_link: string | null;
+        aforo_maximo: number | null;
+        eliminado: boolean;
         created_at: Date;
     }[]>;
-    obtenerPorId(id: string): Promise<{
+    obtenerPorId(id: string, incluirEliminados?: boolean): Promise<{
         id: string;
         nombre: string;
         descripcion: string | null;
+        lugar: string | null;
+        hora: string | null;
         fecha: Date;
         estado: import("@prisma/client").$Enums.EstadoEvento;
         whatsapp_link: string | null;
+        aforo_maximo: number | null;
+        eliminado: boolean;
         created_at: Date;
     }>;
     editar(id: string, data: EditarEventoDto): Promise<{
         id: string;
         nombre: string;
         descripcion: string | null;
+        lugar: string | null;
+        hora: string | null;
         fecha: Date;
         estado: import("@prisma/client").$Enums.EstadoEvento;
         whatsapp_link: string | null;
+        aforo_maximo: number | null;
+        eliminado: boolean;
         created_at: Date;
     }>;
     cambiarEstado(id: string, estado: EstadoEvento): Promise<{
         id: string;
         nombre: string;
         descripcion: string | null;
+        lugar: string | null;
+        hora: string | null;
         fecha: Date;
         estado: import("@prisma/client").$Enums.EstadoEvento;
         whatsapp_link: string | null;
+        aforo_maximo: number | null;
+        eliminado: boolean;
+        created_at: Date;
+    }>;
+    eliminarLogico(id: string): Promise<{
+        id: string;
+        nombre: string;
+        descripcion: string | null;
+        lugar: string | null;
+        hora: string | null;
+        fecha: Date;
+        estado: import("@prisma/client").$Enums.EstadoEvento;
+        whatsapp_link: string | null;
+        aforo_maximo: number | null;
+        eliminado: boolean;
+        created_at: Date;
+    }>;
+    restaurar(id: string): Promise<{
+        id: string;
+        nombre: string;
+        descripcion: string | null;
+        lugar: string | null;
+        hora: string | null;
+        fecha: Date;
+        estado: import("@prisma/client").$Enums.EstadoEvento;
+        whatsapp_link: string | null;
+        aforo_maximo: number | null;
+        eliminado: boolean;
         created_at: Date;
     }>;
     obtenerEstadisticas(eventoId: string): Promise<{

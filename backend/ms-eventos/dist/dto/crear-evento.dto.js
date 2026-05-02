@@ -29,6 +29,16 @@ __decorate([
     __metadata("design:type", String)
 ], CrearEventoDto.prototype, "descripcion", void 0);
 __decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], CrearEventoDto.prototype, "lugar", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], CrearEventoDto.prototype, "hora", void 0);
+__decorate([
     (0, class_validator_1.IsDateString)(),
     __metadata("design:type", String)
 ], CrearEventoDto.prototype, "fecha", void 0);
@@ -42,4 +52,10 @@ __decorate([
     (0, class_validator_1.IsString)(),
     __metadata("design:type", String)
 ], CrearEventoDto.prototype, "whatsapp_link", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsInt)(),
+    (0, class_validator_1.Min)(1),
+    __metadata("design:type", Number)
+], CrearEventoDto.prototype, "aforo_maximo", void 0);
 //# sourceMappingURL=crear-evento.dto.js.map

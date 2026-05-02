@@ -4,5 +4,6 @@ export declare class ParticipantsGateway implements OnGatewayConnection, OnGatew
     server: Server;
     handleConnection(client: Socket): void;
     handleDisconnect(client: Socket): void;
+    emitNuevoParticipante(participante: any): void;
     emitConfirmado(participante: any): void;
 }

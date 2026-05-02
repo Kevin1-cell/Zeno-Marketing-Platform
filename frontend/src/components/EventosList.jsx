@@ -4,19 +4,22 @@ import { useAuthStore } from '../store/authStore'
 import toast from 'react-hot-toast'
 import EventCard from './EventCard'
 
-export default function EventosList({ eventos, onSelect }) {
+export default function EventosList({ eventos, onSelectEvento }) {
   const { token } = useAuthStore()
   const [creando, setCreando] = useState(false)
-  const [nuevoEvento, setNuevoEvento] = useState({ nombre: '', fecha: '', lugar: '', hora: '', whatsapp_link: '' })
+  const [nuevoEvento, setNuevoEvento] = useState({ nombre: '', fecha: '', lugar: '', hora: '', whatsapp_link: '', aforo_maximo: '' })
   const [editandoEvento, setEditandoEvento] = useState(null)
   const [editData, setEditData] = useState({})
 
   const crearEvento = async (e) => {
     e.preventDefault()
     try {
-      await axios.post('/eventos', nuevoEvento, { headers: { Authorization: `Bearer ${token}` } })
+      const payload = { ...nuevoEvento }
+      if (payload.aforo_maximo === '') delete payload.aforo_maximo
+      else payload.aforo_maximo = parseInt(payload.aforo_maximo, 10)
+      await axios.post('/eventos', payload, { headers: { Authorization: `Bearer ${token}` } })
       toast.success('Evento creado')
-      setNuevoEvento({ nombre: '', fecha: '', lugar: '', hora: '', whatsapp_link: '' })
+      setNuevoEvento({ nombre: '', fecha: '', lugar: '', hora: '', whatsapp_link: '', aforo_maximo: '' })
       setCreando(false)
       window.location.reload()
     } catch (err) {
@@ -47,7 +50,10 @@ export default function EventosList({ eventos, onSelect }) {
 
   const actualizarEvento = async (id) => {
     try {
-      await axios.put(`/eventos/${id}`, editData, { headers: { Authorization: `Bearer ${token}` } })
+      const payload = { ...editData }
+      if (payload.aforo_maximo === '' || payload.aforo_maximo === null) delete payload.aforo_maximo
+      else if (typeof payload.aforo_maximo === 'string') payload.aforo_maximo = parseInt(payload.aforo_maximo, 10)
+      await axios.put(`/eventos/${id}`, payload, { headers: { Authorization: `Bearer ${token}` } })
       toast.success('Evento actualizado')
       setEditandoEvento(null)
       window.location.reload()
@@ -59,23 +65,23 @@ export default function EventosList({ eventos, onSelect }) {
   const eventosArray = Array.isArray(eventos) ? eventos : []
 
   return (
-    <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-xl font-bold text-slate-800">Eventos</h2>
+    <div className="bg-zeno-card rounded-lg p-4 border border-zeno-border">
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-xl font-bold text-zeno-blue">Eventos</h2>
         <button
           onClick={() => setCreando(!creando)}
-          className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl text-sm font-medium shadow-sm transition"
+          className="bg-zeno-orange px-3 py-1 rounded-lg text-sm"
         >
-          + Nuevo evento
+          {creando ? 'Cancelar' : '+ Nuevo evento'}
         </button>
       </div>
 
       {creando && (
-        <form onSubmit={crearEvento} className="mb-6 p-4 bg-slate-50 rounded-xl flex flex-wrap gap-3">
+        <form onSubmit={crearEvento} className="mb-4 p-3 bg-zeno-dark rounded-lg flex flex-wrap gap-2">
           <input
             type="text"
             placeholder="Nombre *"
-            className="flex-1 min-w-[120px] border rounded-lg px-3 py-2"
+            className="flex-1 min-w-[120px] bg-zeno-card border border-zeno-border rounded px-2 py-1 text-zeno-text"
             value={nuevoEvento.nombre}
             onChange={(e) => setNuevoEvento({ ...nuevoEvento, nombre: e.target.value })}
             required
@@ -83,20 +89,20 @@ export default function EventosList({ eventos, onSelect }) {
           <input
             type="text"
             placeholder="Lugar"
-            className="flex-1 min-w-[120px] border rounded-lg px-3 py-2"
+            className="flex-1 min-w-[120px] bg-zeno-card border border-zeno-border rounded px-2 py-1"
             value={nuevoEvento.lugar}
             onChange={(e) => setNuevoEvento({ ...nuevoEvento, lugar: e.target.value })}
           />
           <input
             type="text"
             placeholder="Hora (ej. 3:00 PM)"
-            className="w-32 border rounded-lg px-3 py-2"
+            className="w-32 bg-zeno-card border border-zeno-border rounded px-2 py-1"
             value={nuevoEvento.hora}
             onChange={(e) => setNuevoEvento({ ...nuevoEvento, hora: e.target.value })}
           />
           <input
             type="datetime-local"
-            className="border rounded-lg px-3 py-2"
+            className="bg-zeno-card border border-zeno-border rounded px-2 py-1"
             value={nuevoEvento.fecha}
             onChange={(e) => setNuevoEvento({ ...nuevoEvento, fecha: e.target.value })}
             required
@@ -104,41 +110,51 @@ export default function EventosList({ eventos, onSelect }) {
           <input
             type="url"
             placeholder="Enlace WhatsApp (opcional)"
-            className="flex-1 min-w-[150px] border rounded-lg px-3 py-2"
+            className="flex-1 min-w-[150px] bg-zeno-card border border-zeno-border rounded px-2 py-1"
             value={nuevoEvento.whatsapp_link}
             onChange={(e) => setNuevoEvento({ ...nuevoEvento, whatsapp_link: e.target.value })}
           />
-          <button type="submit" className="bg-indigo-600 text-white px-4 py-2 rounded-lg">Guardar</button>
+          <input
+            type="number"
+            min="1"
+            placeholder="Aforo máximo (opcional)"
+            className="w-40 bg-zeno-card border border-zeno-border rounded px-2 py-1"
+            value={nuevoEvento.aforo_maximo}
+            onChange={(e) => setNuevoEvento({ ...nuevoEvento, aforo_maximo: e.target.value })}
+          />
+          <button type="submit" className="bg-zeno-blue px-3 py-1 rounded">Guardar</button>
         </form>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {eventosArray.map(ev => (
-          <EventCard
-            key={ev.id}
-            event={ev}
-            onSelect={onSelect}
-            onEdit={(event) => {
-              setEditandoEvento(event.id)
-              setEditData({
-                nombre: event.nombre,
-                lugar: event.lugar || '',
-                hora: event.hora || '',
-                fecha: event.fecha.slice(0, 16),
-                whatsapp_link: event.whatsapp_link || ''
-              })
-            }}
-            onDelete={eliminarEvento}
-            onRestore={restaurarEvento}
-            isEditing={editandoEvento === ev.id}
-            editData={editData}
-            setEditData={setEditData}
-            onSaveEdit={actualizarEvento}
-            onCancelEdit={() => setEditandoEvento(null)}
-          />
-        ))}
-        {eventosArray.length === 0 && (
-          <div className="col-span-full text-center py-8 text-slate-500">No hay eventos</div>
+      <div className="space-y-2">
+        {eventosArray.length === 0 ? (
+          <p className="text-zeno-text-sec text-center">No hay eventos</p>
+        ) : (
+          eventosArray.map(ev => (
+            <EventCard
+              key={ev.id}
+              event={ev}
+              onSelect={() => onSelectEvento(ev)}
+              onEdit={(event) => {
+                setEditandoEvento(event.id)
+                setEditData({
+                  nombre: event.nombre,
+                  lugar: event.lugar || '',
+                  hora: event.hora || '',
+                  fecha: event.fecha.slice(0, 16),
+                  whatsapp_link: event.whatsapp_link || '',
+                  aforo_maximo: event.aforo_maximo ?? ''
+                })
+              }}
+              onDelete={eliminarEvento}
+              onRestore={restaurarEvento}
+              isEditing={editandoEvento === ev.id}
+              editData={editData}
+              setEditData={setEditData}
+              onSaveEdit={actualizarEvento}
+              onCancelEdit={() => setEditandoEvento(null)}
+            />
+          ))
         )}
       </div>
     </div>

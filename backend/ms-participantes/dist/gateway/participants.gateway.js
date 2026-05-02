@@ -14,12 +14,17 @@ const websockets_1 = require("@nestjs/websockets");
 const socket_io_1 = require("socket.io");
 let ParticipantsGateway = class ParticipantsGateway {
     handleConnection(client) {
-        console.log(`Cliente conectado: ${client.id}`);
+        console.log(`🟢 Cliente conectado a WebSocket: ${client.id}`);
     }
     handleDisconnect(client) {
-        console.log(`Cliente desconectado: ${client.id}`);
+        console.log(`🔴 Cliente desconectado de WebSocket: ${client.id}`);
+    }
+    emitNuevoParticipante(participante) {
+        console.log('📢 Emitiendo participante:nuevo:', participante);
+        this.server.emit('participante:nuevo', participante);
     }
     emitConfirmado(participante) {
+        console.log('✅ Emitiendo participante:confirmado:', participante);
         this.server.emit('participante:confirmado', participante);
     }
 };

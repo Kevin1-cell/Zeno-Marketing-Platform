@@ -7,14 +7,20 @@ export class ParticipantsGateway implements OnGatewayConnection, OnGatewayDiscon
   server: Server;
 
   handleConnection(client: Socket) {
-    console.log(`Cliente conectado: ${client.id}`);
+    console.log(`🟢 Cliente conectado a WebSocket: ${client.id}`);
   }
 
   handleDisconnect(client: Socket) {
-    console.log(`Cliente desconectado: ${client.id}`);
+    console.log(`🔴 Cliente desconectado de WebSocket: ${client.id}`);
+  }
+
+  emitNuevoParticipante(participante: any) {
+    console.log('📢 Emitiendo participante:nuevo:', participante);
+    this.server.emit('participante:nuevo', participante);
   }
 
   emitConfirmado(participante: any) {
+    console.log('✅ Emitiendo participante:confirmado:', participante);
     this.server.emit('participante:confirmado', participante);
   }
 }

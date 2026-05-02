@@ -18,39 +18,65 @@ let EventsService = class EventsService {
         this.prisma = prisma;
     }
     async crear(data) {
+        const fechaEvento = new Date(data.fecha);
+        if (fechaEvento <= new Date()) {
+            throw new common_1.BadRequestException('La fecha del evento debe ser futura');
+        }
         return this.prisma.evento.create({
             data: {
                 nombre: data.nombre,
                 descripcion: data.descripcion,
-                fecha: new Date(data.fecha),
+                lugar: data.lugar,
+                hora: data.hora,
+                fecha: fechaEvento,
                 estado: data.estado || client_1.EstadoEvento.ACTIVO,
                 whatsapp_link: data.whatsapp_link,
+                aforo_maximo: data.aforo_maximo,
+                eliminado: false,
             },
         });
     }
-    async listar(estado) {
-        const where = estado ? { estado } : {};
+    async listar(estado, incluirEliminados = false) {
+        const where = {};
+        if (estado !== undefined)
+            where.estado = estado;
+        if (!incluirEliminados)
+            where.eliminado = false;
         return this.prisma.evento.findMany({
             where,
             orderBy: { fecha: 'desc' },
         });
     }
-    async obtenerPorId(id) {
-        const evento = await this.prisma.evento.findUnique({ where: { id } });
+    async obtenerPorId(id, incluirEliminados = false) {
+        const evento = await this.prisma.evento.findFirst({
+            where: {
+                id,
+                ...(incluirEliminados ? {} : { eliminado: false }),
+            },
+        });
         if (!evento)
             throw new common_1.NotFoundException('Evento no encontrado');
         return evento;
     }
     async editar(id, data) {
         await this.obtenerPorId(id);
+        if (data.fecha) {
+            const fechaEvento = new Date(data.fecha);
+            if (fechaEvento <= new Date()) {
+                throw new common_1.BadRequestException('La fecha del evento debe ser futura');
+            }
+        }
         return this.prisma.evento.update({
             where: { id },
             data: {
                 nombre: data.nombre,
                 descripcion: data.descripcion,
+                lugar: data.lugar,
+                hora: data.hora,
                 fecha: data.fecha ? new Date(data.fecha) : undefined,
                 estado: data.estado,
                 whatsapp_link: data.whatsapp_link,
+                aforo_maximo: data.aforo_maximo,
             },
         });
     }
@@ -59,6 +85,22 @@ let EventsService = class EventsService {
         return this.prisma.evento.update({
             where: { id },
             data: { estado },
+        });
+    }
+    async eliminarLogico(id) {
+        await this.obtenerPorId(id);
+        return this.prisma.evento.update({
+            where: { id },
+            data: { eliminado: true },
+        });
+    }
+    async restaurar(id) {
+        const evento = await this.prisma.evento.findFirst({ where: { id, eliminado: true } });
+        if (!evento)
+            throw new common_1.NotFoundException('Evento no encontrado o no está eliminado');
+        return this.prisma.evento.update({
+            where: { id },
+            data: { eliminado: false },
         });
     }
     async obtenerEstadisticas(eventoId) {

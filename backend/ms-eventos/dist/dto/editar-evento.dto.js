@@ -27,6 +27,16 @@ __decorate([
 ], EditarEventoDto.prototype, "descripcion", void 0);
 __decorate([
     (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], EditarEventoDto.prototype, "lugar", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], EditarEventoDto.prototype, "hora", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsDateString)(),
     __metadata("design:type", String)
 ], EditarEventoDto.prototype, "fecha", void 0);
@@ -40,4 +50,10 @@ __decorate([
     (0, class_validator_1.IsString)(),
     __metadata("design:type", String)
 ], EditarEventoDto.prototype, "whatsapp_link", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsInt)(),
+    (0, class_validator_1.Min)(1),
+    __metadata("design:type", Number)
+], EditarEventoDto.prototype, "aforo_maximo", void 0);
 //# sourceMappingURL=editar-evento.dto.js.map
