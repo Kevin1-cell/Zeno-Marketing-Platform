@@ -65,98 +65,311 @@ export default function EventosList({ eventos, onSelectEvento }) {
   const eventosArray = Array.isArray(eventos) ? eventos : []
 
   return (
-    <div className="bg-zeno-card rounded-lg p-4 border border-zeno-border">
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-bold text-zeno-blue">Eventos</h2>
-        <button
-          onClick={() => setCreando(!creando)}
-          className="bg-zeno-orange px-3 py-1 rounded-lg text-sm"
-        >
-          {creando ? 'Cancelar' : '+ Nuevo evento'}
-        </button>
-      </div>
+    <>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Kameron:wght@400;700&family=DM+Sans:wght@400;500;600;700&display=swap');
 
-      {creando && (
-        <form onSubmit={crearEvento} className="mb-4 p-3 bg-zeno-dark rounded-lg flex flex-wrap gap-2">
-          <input
-            type="text"
-            placeholder="Nombre *"
-            className="flex-1 min-w-[120px] bg-zeno-card border border-zeno-border rounded px-2 py-1 text-zeno-text"
-            value={nuevoEvento.nombre}
-            onChange={(e) => setNuevoEvento({ ...nuevoEvento, nombre: e.target.value })}
-            required
-          />
-          <input
-            type="text"
-            placeholder="Lugar"
-            className="flex-1 min-w-[120px] bg-zeno-card border border-zeno-border rounded px-2 py-1"
-            value={nuevoEvento.lugar}
-            onChange={(e) => setNuevoEvento({ ...nuevoEvento, lugar: e.target.value })}
-          />
-          <input
-            type="text"
-            placeholder="Hora (ej. 3:00 PM)"
-            className="w-32 bg-zeno-card border border-zeno-border rounded px-2 py-1"
-            value={nuevoEvento.hora}
-            onChange={(e) => setNuevoEvento({ ...nuevoEvento, hora: e.target.value })}
-          />
-          <input
-            type="datetime-local"
-            className="bg-zeno-card border border-zeno-border rounded px-2 py-1"
-            value={nuevoEvento.fecha}
-            onChange={(e) => setNuevoEvento({ ...nuevoEvento, fecha: e.target.value })}
-            required
-          />
-          <input
-            type="url"
-            placeholder="Enlace WhatsApp (opcional)"
-            className="flex-1 min-w-[150px] bg-zeno-card border border-zeno-border rounded px-2 py-1"
-            value={nuevoEvento.whatsapp_link}
-            onChange={(e) => setNuevoEvento({ ...nuevoEvento, whatsapp_link: e.target.value })}
-          />
-          <input
-            type="number"
-            min="1"
-            placeholder="Aforo máximo (opcional)"
-            className="w-40 bg-zeno-card border border-zeno-border rounded px-2 py-1"
-            value={nuevoEvento.aforo_maximo}
-            onChange={(e) => setNuevoEvento({ ...nuevoEvento, aforo_maximo: e.target.value })}
-          />
-          <button type="submit" className="bg-zeno-blue px-3 py-1 rounded">Guardar</button>
-        </form>
-      )}
+        .el-card {
+          background: rgba(255,255,255,0.88);
+          backdrop-filter: blur(28px);
+          border: 1.5px solid rgba(255,255,255,0.9);
+          box-shadow: 0 40px 100px rgba(14,120,180,0.22), 0 16px 40px rgba(14,120,180,0.12), inset 0 1px 0 rgba(255,255,255,1);
+          border-radius: clamp(24px, 4vw, 36px);
+          overflow: hidden;
+          width: 100%;
+        }
 
-      <div className="space-y-2">
-        {eventosArray.length === 0 ? (
-          <p className="text-zeno-text-sec text-center">No hay eventos</p>
-        ) : (
-          eventosArray.map(ev => (
-            <EventCard
-              key={ev.id}
-              event={ev}
-              onSelect={() => onSelectEvento(ev)}
-              onEdit={(event) => {
-                setEditandoEvento(event.id)
-                setEditData({
-                  nombre: event.nombre,
-                  lugar: event.lugar || '',
-                  hora: event.hora || '',
-                  fecha: event.fecha.slice(0, 16),
-                  whatsapp_link: event.whatsapp_link || '',
-                  aforo_maximo: event.aforo_maximo ?? ''
-                })
-              }}
-              onDelete={eliminarEvento}
-              onRestore={restaurarEvento}
-              isEditing={editandoEvento === ev.id}
-              editData={editData}
-              setEditData={setEditData}
-              onSaveEdit={actualizarEvento}
-              onCancelEdit={() => setEditandoEvento(null)}
-            />
-          ))
+        .el-header {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: clamp(16px, 2.5vw, 26px) clamp(20px, 3vw, 32px);
+          border-bottom: 1px solid rgba(147,197,253,0.25);
+          flex-wrap: wrap;
+          gap: 12px;
+        }
+
+        .el-title {
+          font-family: 'Kameron', serif;
+          font-size: clamp(18px, 3vw, 26px);
+          font-weight: 700;
+          color: #0c2340;
+          display: flex;
+          align-items: center;
+          gap: 10px;
+        }
+        .el-count-badge {
+          background: rgba(14,165,233,0.12);
+          border: 1px solid rgba(56,189,248,0.3);
+          color: #0284c7;
+          font-family: 'DM Sans', sans-serif;
+          font-size: 12px; font-weight: 700;
+          padding: 3px 10px;
+          border-radius: 50px;
+        }
+
+        .el-btn-nuevo {
+          display: flex; align-items: center; gap: 7px;
+          padding: clamp(10px, 1.5vw, 12px) clamp(16px, 2.5vw, 22px);
+          border-radius: clamp(16px, 2.5vw, 22px);
+          background: linear-gradient(135deg, #38bdf8 0%, #0ea5e9 50%, #0284c7 100%);
+          border: none;
+          color: #fff;
+          font-family: 'Kameron', serif; font-weight: 700;
+          font-size: clamp(12px, 1.5vw, 14px);
+          cursor: pointer;
+          box-shadow: 0 6px 24px rgba(14,165,233,0.4);
+          transition: all 0.2s;
+          min-height: 44px;
+          white-space: nowrap;
+        }
+        .el-btn-nuevo:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 10px 32px rgba(14,165,233,0.5);
+        }
+
+        .el-btn-cancel {
+          display: flex; align-items: center; gap: 7px;
+          padding: clamp(10px, 1.5vw, 12px) clamp(16px, 2.5vw, 22px);
+          border-radius: clamp(16px, 2.5vw, 22px);
+          border: 1.5px solid rgba(56,189,248,0.4);
+          background: rgba(240,249,255,0.5);
+          color: #0369a1;
+          font-family: 'Kameron', serif; font-weight: 700;
+          font-size: clamp(12px, 1.5vw, 14px);
+          cursor: pointer;
+          transition: all 0.2s;
+          min-height: 44px;
+          white-space: nowrap;
+        }
+        .el-btn-cancel:hover {
+          background: rgba(240,249,255,0.85);
+          border-color: rgba(56,189,248,0.7);
+        }
+
+        /* Formulario de creación */
+        .el-form-wrap {
+          margin: 0;
+          padding: clamp(16px, 2.5vw, 24px) clamp(20px, 3vw, 32px);
+          background: rgba(240,249,255,0.5);
+          border-bottom: 1px solid rgba(147,197,253,0.25);
+          animation: elFadeUp 0.32s ease both;
+        }
+        @keyframes elFadeUp {
+          from { transform: translateY(-8px); opacity: 0; }
+          to { transform: translateY(0); opacity: 1; }
+        }
+
+        .el-form-title {
+          font-size: clamp(9px, 1vw, 11px);
+          font-weight: 700;
+          letter-spacing: 0.18em;
+          text-transform: uppercase;
+          color: #0369a1;
+          margin-bottom: 14px;
+        }
+
+        .el-form-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+          gap: 10px;
+          margin-bottom: 12px;
+        }
+
+        .el-input {
+          width: 100%;
+          background: rgba(240,249,255,0.8);
+          border: 2px solid rgba(147,197,253,0.5);
+          border-radius: clamp(12px, 2vw, 16px);
+          color: #0c2340;
+          font-weight: 600;
+          font-family: 'DM Sans', sans-serif;
+          font-size: clamp(13px, 1.5vw, 14px);
+          padding: clamp(10px, 1.5vw, 13px) clamp(12px, 2vw, 16px);
+          transition: all 0.2s;
+          outline: none;
+          min-height: 44px;
+        }
+        .el-input::placeholder { color: #93c5fd; }
+        .el-input:focus {
+          border-color: #38bdf8;
+          box-shadow: 0 0 0 3px rgba(56,189,248,0.12);
+        }
+
+        .el-form-actions {
+          display: flex;
+          justify-content: flex-end;
+          gap: 10px;
+        }
+
+        .el-btn-submit {
+          display: flex; align-items: center; gap: 7px;
+          padding: clamp(10px, 1.5vw, 12px) clamp(20px, 3vw, 28px);
+          border-radius: clamp(16px, 2.5vw, 22px);
+          background: linear-gradient(135deg, #38bdf8 0%, #0ea5e9 50%, #0284c7 100%);
+          border: none;
+          color: #fff;
+          font-family: 'Kameron', serif; font-weight: 700;
+          font-size: clamp(13px, 1.5vw, 15px);
+          cursor: pointer;
+          box-shadow: 0 6px 24px rgba(14,165,233,0.4);
+          transition: all 0.2s;
+          min-height: 44px;
+        }
+        .el-btn-submit:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 10px 32px rgba(14,165,233,0.5);
+        }
+
+        /* Lista de eventos */
+        .el-body {
+          padding: clamp(16px, 2.5vw, 24px) clamp(20px, 3vw, 32px);
+        }
+        .el-list { display: flex; flex-direction: column; gap: 10px; }
+
+        .el-empty {
+          text-align: center;
+          padding: clamp(32px, 5vw, 56px) 20px;
+          color: #475569;
+        }
+        .el-empty-icon {
+          font-size: 40px;
+          margin-bottom: 12px;
+          display: block;
+          opacity: 0.5;
+        }
+        .el-empty-text {
+          font-family: 'Kameron', serif;
+          font-size: clamp(16px, 2.5vw, 20px);
+          font-weight: 700;
+          color: #0c2340;
+          margin-bottom: 6px;
+        }
+        .el-empty-sub {
+          font-size: clamp(12px, 1.5vw, 14px);
+          color: #475569;
+        }
+      `}</style>
+
+      <div className="el-card">
+        {/* Header */}
+        <div className="el-header">
+          <div className="el-title">
+            Eventos
+            <span className="el-count-badge">{eventosArray.length}</span>
+          </div>
+          <button
+            onClick={() => setCreando(!creando)}
+            className={creando ? 'el-btn-cancel' : 'el-btn-nuevo'}
+          >
+            {creando ? '✕ Cancelar' : '+ Nuevo evento'}
+          </button>
+        </div>
+
+        {/* Formulario de creación */}
+        {creando && (
+          <div className="el-form-wrap">
+            <div className="el-form-title">Crear nuevo evento</div>
+            <form onSubmit={crearEvento}>
+              <div className="el-form-grid">
+                <input
+                  type="text"
+                  placeholder="Nombre del evento *"
+                  className="el-input"
+                  style={{ gridColumn: 'span 2' }}
+                  value={nuevoEvento.nombre}
+                  onChange={(e) => setNuevoEvento({ ...nuevoEvento, nombre: e.target.value })}
+                  required
+                />
+                <input
+                  type="text"
+                  placeholder="Lugar"
+                  className="el-input"
+                  value={nuevoEvento.lugar}
+                  onChange={(e) => setNuevoEvento({ ...nuevoEvento, lugar: e.target.value })}
+                />
+                <input
+                  type="text"
+                  placeholder="Hora (ej. 3:00 PM)"
+                  className="el-input"
+                  value={nuevoEvento.hora}
+                  onChange={(e) => setNuevoEvento({ ...nuevoEvento, hora: e.target.value })}
+                />
+                <input
+                  type="datetime-local"
+                  className="el-input"
+                  value={nuevoEvento.fecha}
+                  onChange={(e) => setNuevoEvento({ ...nuevoEvento, fecha: e.target.value })}
+                  required
+                />
+                <input
+                  type="number"
+                  min="1"
+                  placeholder="Aforo máximo (opcional)"
+                  className="el-input"
+                  value={nuevoEvento.aforo_maximo}
+                  onChange={(e) => setNuevoEvento({ ...nuevoEvento, aforo_maximo: e.target.value })}
+                />
+                <input
+                  type="url"
+                  placeholder="Enlace WhatsApp (opcional)"
+                  className="el-input"
+                  style={{ gridColumn: 'span 2' }}
+                  value={nuevoEvento.whatsapp_link}
+                  onChange={(e) => setNuevoEvento({ ...nuevoEvento, whatsapp_link: e.target.value })}
+                />
+              </div>
+              <div className="el-form-actions">
+                <button type="button" className="el-btn-cancel" onClick={() => setCreando(false)}>
+                  Cancelar
+                </button>
+                <button type="submit" className="el-btn-submit">
+                  ✓ Guardar evento
+                </button>
+              </div>
+            </form>
+          </div>
         )}
+
+        {/* Lista */}
+        <div className="el-body">
+          {eventosArray.length === 0 ? (
+            <div className="el-empty">
+              <span className="el-empty-icon">📅</span>
+              <div className="el-empty-text">No hay eventos creados</div>
+              <div className="el-empty-sub">Haz clic en "+ Nuevo evento" para empezar</div>
+            </div>
+          ) : (
+            <div className="el-list">
+              {eventosArray.map(ev => (
+                <EventCard
+                  key={ev.id}
+                  event={ev}
+                  onSelect={() => onSelectEvento(ev)}
+                  onEdit={(event) => {
+                    setEditandoEvento(event.id)
+                    setEditData({
+                      nombre: event.nombre,
+                      lugar: event.lugar || '',
+                      hora: event.hora || '',
+                      fecha: event.fecha.slice(0, 16),
+                      whatsapp_link: event.whatsapp_link || '',
+                      aforo_maximo: event.aforo_maximo ?? ''
+                    })
+                  }}
+                  onDelete={eliminarEvento}
+                  onRestore={restaurarEvento}
+                  isEditing={editandoEvento === ev.id}
+                  editData={editData}
+                  setEditData={setEditData}
+                  onSaveEdit={actualizarEvento}
+                  onCancelEdit={() => setEditandoEvento(null)}
+                />
+              ))}
+            </div>
+          )}
+        </div>
       </div>
-    </div>
+    </>
   )
 }

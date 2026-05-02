@@ -2,50 +2,55 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --zeno-deep: #020617;
-  --zeno-glass: rgba(15, 23, 42, 0.6);
-  --zeno-blue: #3b82f6;
-  --zeno-orange: #f97316;
-  --zeno-magenta: #d946ef;
+@import url('https://fonts.googleapis.com/css2?family=Kameron:wght@400;700&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,700;1,9..40,400&display=swap');
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html, body, #root {
+  height: 100%;
 }
 
 body {
-  background: radial-gradient(circle at top right, #1e1b4b, #020617, #0f172a);
-  color: #ffffff;
-  min-height: screen;
-  font-family: 'Inter', sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #E0F2FE;
+  font-family: 'DM Sans', sans-serif;
+  -webkit-font-smoothing: antialiased;
 }
 
-/* Efecto de botón explosivo tipo logo */
-.btn-cosmic {
-  background: linear-gradient(45deg, #3b82f6, #d946ef, #f97316);
-  background-size: 200% 200%;
-  animation: cosmicGradient 5s ease infinite;
-  box-shadow: 0 0 20px rgba(59, 130, 246, 0.4);
-  transition: all 0.3s ease;
+/* Scrollbar oculto para el body scrollable en registro */
+.zr-scroll::-webkit-scrollbar { display: none; }
+.zr-scroll { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* Select appearance reset */
+select { -webkit-appearance: none; appearance: none; }
+
+/* Animación del número de sorteo */
+@keyframes numPop {
+  0%   { transform: scale(0.5) rotate(-8deg); opacity: 0; }
+  70%  { transform: scale(1.1) rotate(2deg); opacity: 1; }
+  100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+.anim-num-pop {
+  animation: numPop 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) both;
 }
 
-.btn-cosmic:hover {
-  transform: scale(1.02);
-  box-shadow: 0 0 30px rgba(217, 70, 239, 0.6);
+/* Animación logo flotante */
+@keyframes floatLogo {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-6px); }
+}
+.anim-float {
+  animation: floatLogo 3.5s ease-in-out infinite;
 }
 
-@keyframes cosmicGradient {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
+/* Fade-in + slide desde abajo */
+@keyframes fadeSlideUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
-
-/* Glassmorphism para los inputs */
-.glass-input {
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  transition: border 0.3s ease;
-}
-
-.glass-input:focus {
-  border: 1px solid var(--zeno-blue);
-  background: rgba(255, 255, 255, 0.1);
+.anim-fade-up {
+  animation: fadeSlideUp 0.45s ease both;
 }

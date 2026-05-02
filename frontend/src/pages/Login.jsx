@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../store/authStore'
 import toast, { Toaster } from 'react-hot-toast'
-import { Lock, User } from 'lucide-react'
+import { Lock, User, ArrowLeft } from 'lucide-react'
 
 export default function Login() {
   const [email, setEmail] = useState('')
@@ -27,263 +27,348 @@ export default function Login() {
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&family=Oswald:wght@700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Kameron:wght@400;700&family=DM+Sans:wght@400;500;600;700&display=swap');
 
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-        html, body, #root {
-          height: 100%;
-          overflow: hidden;
-        }
-
-        .zl-root {
-          height: 100dvh;
-          background: #030b18;
+        .zl-page {
+          min-height: 100vh;
+          width: 100%;
           display: flex;
-          align-items: stretch;
+          align-items: center;
           justify-content: center;
+          padding: clamp(16px, 3vw, 48px) clamp(12px, 4vw, 24px);
           font-family: 'DM Sans', sans-serif;
           position: relative;
           overflow: hidden;
+          background:
+            radial-gradient(ellipse 70% 50% at 15% 15%, #93c5fd55 0%, transparent 60%),
+            radial-gradient(ellipse 60% 60% at 85% 85%, #7dd3fc44 0%, transparent 60%),
+            radial-gradient(ellipse 100% 80% at 50% 50%, #e0f7ff 0%, #cde8f5 100%);
         }
 
-        /* ── Glow ambiental ── */
-        .zl-bg-glow {
-          position: fixed; inset: 0;
-          z-index: 0; pointer-events: none;
-        }
-        .zl-bg-glow::before {
-          content: '';
-          position: absolute;
-          top: -100px; left: 50%;
-          transform: translateX(-50%);
-          width: 500px; height: 350px;
-          background: radial-gradient(ellipse, rgba(30,111,255,0.18) 0%, transparent 70%);
-        }
-        .zl-bg-glow::after {
-          content: '';
-          position: absolute;
-          bottom: -60px; right: -80px;
-          width: 350px; height: 350px;
-          background: radial-gradient(ellipse, rgba(255,140,0,0.10) 0%, transparent 70%);
-        }
+        /* Burbujas fondo */
+        .zl-bubble { position: fixed; border-radius: 50%; pointer-events: none; }
+        .zl-b1 { width: clamp(200px,30vw,380px); height: clamp(200px,30vw,380px); background: radial-gradient(circle, #a5d8f388 0%, transparent 70%); top: -80px; left: -80px; animation: bf1 9s ease-in-out infinite; }
+        .zl-b2 { width: clamp(140px,20vw,260px); height: clamp(140px,20vw,260px); background: radial-gradient(circle, #7ec8e366 0%, transparent 70%); bottom: 5%; right: -50px; animation: bf2 11s ease-in-out infinite; }
+        .zl-b3 { width: clamp(80px,10vw,140px); height: clamp(80px,10vw,140px); background: radial-gradient(circle, #93c5fd55 0%, transparent 70%); top: 40%; left: -30px; animation: bf1 14s ease-in-out infinite reverse; }
+        .zl-b4 { width: clamp(60px,7vw,110px); height: clamp(60px,7vw,110px); background: radial-gradient(circle, #60a5fa44 0%, transparent 70%); top: 15%; right: 10%; animation: bf2 8s ease-in-out infinite; }
+        @keyframes bf1 { 0%,100%{transform:translate(0,0) scale(1)} 33%{transform:translate(18px,-14px) scale(1.04)} 66%{transform:translate(-10px,18px) scale(0.97)} }
+        @keyframes bf2 { 0%,100%{transform:translate(0,0) scale(1)} 50%{transform:translate(-16px,-20px) scale(1.06)} }
 
-        /* ── Card principal ── */
+        /* Tarjeta */
         .zl-card {
-          position: relative; z-index: 1;
-          width: 100%; max-width: 430px;
-          height: 100dvh;
-          background: linear-gradient(180deg, #0a1628 0%, #060e1c 100%);
-          display: flex; flex-direction: column;
-          border-left: 1px solid rgba(30,111,255,0.08);
-          border-right: 1px solid rgba(30,111,255,0.08);
+          position: relative;
+          z-index: 10;
+          width: 100%;
+          max-width: min(420px, 96vw);
+          border-radius: clamp(24px, 4vw, 36px);
+          overflow: hidden;
+          background: rgba(255,255,255,0.88);
+          backdrop-filter: blur(28px);
+          -webkit-backdrop-filter: blur(28px);
+          border: 1.5px solid rgba(255,255,255,0.92);
+          box-shadow:
+            0 clamp(16px,4vw,40px) clamp(40px,8vw,100px) rgba(14,120,180,0.22),
+            0 clamp(4px,1vw,10px) clamp(16px,3vw,36px) rgba(14,120,180,0.12),
+            0 2px 6px rgba(0,0,0,0.05),
+            inset 0 1px 0 rgba(255,255,255,1);
+          margin: 0 auto;
         }
 
-        /* ── Top bar con botón Volver ── */
-        .zl-topbar {
-          flex-shrink: 0;
-          display: flex; align-items: center;
-          padding: 14px 16px 0;
+        /* Logo hero */
+        .zl-logo-hero {
+          width: 100%;
+          position: relative;
+          overflow: hidden;
+          background: linear-gradient(180deg, #daf0fb 0%, rgba(224,247,255,0) 100%);
+          min-height: clamp(130px, 24vw, 210px);
+          display: flex;
+          align-items: center;
+          justify-content: center;
         }
-        .zl-btn-volver {
-          display: flex; align-items: center; gap: 5px;
-          background: rgba(30,111,255,0.12);
-          border: 1px solid rgba(30,111,255,0.35);
-          color: #7eb8ff;
-          font-family: 'DM Sans', sans-serif;
-          font-size: 12px; font-weight: 500;
-          padding: 6px 14px; border-radius: 50px;
-          cursor: pointer; transition: all 0.2s;
-        }
-        .zl-btn-volver:hover { background: rgba(30,111,255,0.24); color: #aed4ff; }
-        .zl-btn-volver svg { width: 13px; height: 13px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-
-        /* ── Logo ── */
-        .zl-logo-wrap {
-          flex-shrink: 0;
-          display: flex; flex-direction: column; align-items: center;
-          padding: 8px 16px 6px;
-        }
-        .zl-logo-img {
-          width: clamp(120px, 38vw, 160px);
+        .zl-logo-hero img {
+          width: 100%;
+          max-width: 100%;
           height: auto;
-          filter: drop-shadow(0 0 22px rgba(30,111,255,0.4)) drop-shadow(0 0 8px rgba(255,140,0,0.25));
-          animation: logoFloat 4s ease-in-out infinite;
+          display: block;
+          animation: logoFloat 3.5s ease-in-out infinite;
         }
         @keyframes logoFloat {
-          0%, 100% { transform: translateY(0px); }
-          50%       { transform: translateY(-6px); }
+          0%,100% { transform: translateY(0px) scale(1); }
+          50%      { transform: translateY(-7px) scale(1.012); }
         }
-        .zl-badge {
-          margin-top: 4px;
-          font-family: 'Syne', sans-serif;
-          font-size: clamp(15px, 4.5vw, 19px);
+
+        /* Botón volver — esquina superior izquierda sobre el logo */
+        .zl-btn-volver {
+          position: absolute;
+          top: clamp(10px, 2vw, 16px);
+          left: clamp(10px, 2vw, 16px);
+          z-index: 20;
+          display: flex;
+          align-items: center;
+          gap: 5px;
+          background: rgba(255,255,255,0.9);
+          border: 1.5px solid rgba(14,165,233,0.3);
+          color: #0369a1;
+          font-family: 'DM Sans', sans-serif;
+          font-size: clamp(12px, 1.3vw, 14px);
           font-weight: 700;
-          background: linear-gradient(90deg, #1e6fff, #ff8c00);
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-          background-clip: text;
-          letter-spacing: 0.04em;
+          padding: clamp(6px,1vw,9px) clamp(12px,1.8vw,18px);
+          border-radius: 50px;
+          cursor: pointer;
+          backdrop-filter: blur(10px);
+          transition: all 0.2s;
+          box-shadow: 0 2px 12px rgba(14,165,233,0.15);
+          white-space: nowrap;
+        }
+        .zl-btn-volver:hover {
+          background: #fff;
+          border-color: #0ea5e9;
+          box-shadow: 0 4px 18px rgba(14,165,233,0.28);
         }
 
-        /* ── Divider ── */
-        .zl-divider {
-          flex-shrink: 0;
-          height: 1px;
-          background: linear-gradient(90deg, transparent, rgba(30,111,255,0.2), transparent);
-          margin: 6px 16px;
-        }
-
-        /* ── Body scrolleable ── */
+        /* Body */
         .zl-body {
-          flex: 1;
-          overflow-y: auto;
-          overflow-x: hidden;
-          padding: 20px 20px 32px;
-          display: flex; flex-direction: column;
-          justify-content: center;
-          gap: 14px;
-          -webkit-overflow-scrolling: touch;
-          scrollbar-width: none;
+          padding: clamp(8px,1.5vw,14px) clamp(20px,4vw,32px) clamp(22px,3.5vw,32px);
+          display: flex;
+          flex-direction: column;
+          gap: clamp(12px,2vw,18px);
         }
-        .zl-body::-webkit-scrollbar { display: none; }
 
-        /* ── Subtítulo ── */
-        .zl-subtitle {
+        /* Bloque título */
+        .zl-title-block {
           text-align: center;
-          color: rgba(148,180,220,0.5);
-          font-size: 13px;
-          margin-bottom: 4px;
+          padding: clamp(10px,1.5vw,16px) 0 clamp(4px,0.8vw,8px);
+        }
+        .zl-title {
+          font-family: 'Kameron', serif;
+          font-size: clamp(20px, 3.5vw, 26px);
+          font-weight: 700;
+          color: #0c2340;
+          letter-spacing: -0.01em;
+          line-height: 1.15;
+        }
+        .zl-subtitle {
+          font-size: clamp(11px, 1.2vw, 13px);
+          color: #475569;
+          font-weight: 500;
+          margin-top: 5px;
+          line-height: 1.5;
         }
 
-        /* ── Labels ── */
-        .zl-label {
+        /* Divider */
+        .zl-divider {
+          height: 1px;
+          background: linear-gradient(90deg, transparent, rgba(56,189,248,0.3), transparent);
+          margin: 0;
+        }
+
+        /* Insignia de acceso */
+        .zl-badge-wrap {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 8px;
+          margin-bottom: 2px;
+        }
+        .zl-badge-line {
+          flex: 1;
+          height: 1px;
+          background: linear-gradient(90deg, transparent, rgba(56,189,248,0.25));
+        }
+        .zl-badge-line.right {
+          background: linear-gradient(270deg, transparent, rgba(56,189,248,0.25));
+        }
+        .zl-badge-text {
+          font-size: clamp(9px, 1vw, 11px);
+          font-weight: 700;
+          letter-spacing: 0.2em;
+          text-transform: uppercase;
+          color: #0284c7;
+          white-space: nowrap;
+        }
+
+        /* Icono central decorativo */
+        .zl-icon-wrap {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin: clamp(4px,1vw,8px) 0;
+        }
+        .zl-icon-circle {
+          width: clamp(52px, 8vw, 64px);
+          height: clamp(52px, 8vw, 64px);
+          border-radius: 50%;
+          background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%);
+          border: 2px solid rgba(56,189,248,0.3);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: #0284c7;
+          box-shadow: 0 4px 16px rgba(14,165,233,0.18);
+        }
+
+        /* Label */
+        .zl-lbl {
           display: block;
-          font-size: 10px; font-weight: 500;
-          letter-spacing: 0.08em; text-transform: uppercase;
-          color: rgba(148,180,220,0.65);
-          margin-bottom: 6px; padding-left: 2px;
+          font-size: clamp(9px,1vw,11px);
+          font-weight: 700;
+          letter-spacing: 0.18em;
+          text-transform: uppercase;
+          color: #0369a1;
+          margin-bottom: 7px;
         }
 
-        /* ── Input wrapper con ícono ── */
-        .zl-input-wrap {
-          position: relative;
-        }
+        /* Input */
+        .zl-input-wrap { position: relative; }
         .zl-input-icon {
           position: absolute;
-          left: 14px; top: 50%;
+          left: 14px;
+          top: 50%;
           transform: translateY(-50%);
-          color: rgba(100,160,255,0.45);
-          display: flex; align-items: center;
+          color: #7dd3fc;
           pointer-events: none;
           transition: color 0.2s;
         }
+        .zl-input-wrap:focus-within .zl-input-icon { color: #0ea5e9; }
         .zl-input {
           width: 100%;
-          background: rgba(255,255,255,0.04);
-          border: 1px solid rgba(30,111,255,0.2);
-          border-radius: 14px;
-          padding: 13px 14px 13px 42px;
-          color: #e0eeff;
+          background: rgba(240,249,255,0.8);
+          border: 2px solid rgba(147,197,253,0.5);
+          border-radius: clamp(12px,2vw,16px);
+          padding: clamp(11px,1.5vw,14px) 16px clamp(11px,1.5vw,14px) 44px;
+          color: #0c2340;
           font-family: 'DM Sans', sans-serif;
-          font-size: 15px; outline: none;
-          transition: border-color 0.2s, box-shadow 0.2s;
+          font-size: clamp(13px,1.5vw,15px);
+          font-weight: 600;
+          outline: none;
+          transition: all 0.2s;
           -webkit-appearance: none;
         }
-        .zl-input::placeholder { color: rgba(148,180,220,0.28); }
+        .zl-input::placeholder { color: #93c5fd; font-weight: 400; }
         .zl-input:focus {
-          border-color: rgba(30,111,255,0.65);
-          box-shadow: 0 0 0 3px rgba(30,111,255,0.1);
-        }
-        .zl-input:focus + .zl-input-icon,
-        .zl-input-wrap:focus-within .zl-input-icon {
-          color: rgba(100,160,255,0.75);
+          border-color: #38bdf8;
+          background: #f0f9ff;
+          box-shadow: 0 0 0 3px rgba(56,189,248,0.12);
         }
 
-        /* ── Botón primario ── */
+        /* Botón primario */
         .zl-btn-primary {
-          width: 100%; padding: 15px; border-radius: 50px; border: none;
-          background: linear-gradient(90deg, #1e6fff 0%, #ff8c00 100%);
+          width: 100%;
+          padding: clamp(13px,1.8vw,16px);
+          border-radius: clamp(16px,2.5vw,22px);
+          border: none;
+          background: linear-gradient(135deg, #38bdf8 0%, #0ea5e9 50%, #0284c7 100%);
           color: #fff;
-          font-family: 'Syne', sans-serif;
-          font-size: 15px; font-weight: 700; letter-spacing: 0.05em;
-          cursor: pointer; position: relative; overflow: hidden;
-          transition: opacity 0.2s, transform 0.15s;
-          box-shadow: 0 4px 24px rgba(30,111,255,0.3);
+          font-family: 'Kameron', serif;
+          font-size: clamp(16px,2vw,19px);
+          font-weight: 700;
+          cursor: pointer;
+          transition: all 0.2s;
+          box-shadow: 0 6px 24px rgba(14,165,233,0.4);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 8px;
           margin-top: 4px;
         }
-        .zl-btn-primary::before {
-          content: ''; position: absolute; inset: 0;
-          background: linear-gradient(90deg, rgba(255,255,255,0.13) 0%, transparent 60%);
-          pointer-events: none;
+        .zl-btn-primary:hover:not(:disabled) {
+          transform: translateY(-2px);
+          box-shadow: 0 10px 32px rgba(14,165,233,0.5);
         }
-        .zl-btn-primary:hover:not(:disabled) { opacity: 0.9; transform: translateY(-1px); }
-        .zl-btn-primary:active:not(:disabled) { transform: translateY(0px) scale(0.98); }
-        .zl-btn-primary:disabled { opacity: 0.45; cursor: not-allowed; }
+        .zl-btn-primary:active:not(:disabled) { transform: translateY(0); }
+        .zl-btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
 
-        /* ── Spinner dentro del botón ── */
+        /* Spinner */
         .zl-spinner {
-          display: inline-block;
-          width: 15px; height: 15px;
+          width: clamp(14px,1.5vw,17px);
+          height: clamp(14px,1.5vw,17px);
           border: 2px solid rgba(255,255,255,0.35);
           border-top-color: #fff;
           border-radius: 50%;
           animation: spin 0.7s linear infinite;
-          vertical-align: middle;
-          margin-right: 8px;
+          flex-shrink: 0;
         }
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        /* ── Línea decorativa de acento ── */
-        .zl-accent-line {
-          width: 40px; height: 2px;
-          background: linear-gradient(90deg, #1e6fff, #ff8c00);
-          border-radius: 2px;
-          margin: 0 auto 6px;
+        /* Footer */
+        .zl-footer {
+          text-align: center;
+          padding: clamp(12px,1.5vw,16px) clamp(16px,3vw,28px);
+          border-top: 1px solid rgba(147,197,253,0.35);
+          font-size: clamp(10px,1.1vw,12px);
+          color: #64748b;
+          font-weight: 500;
+          line-height: 1.6;
         }
+
+        /* Fade up */
+        .zl-fade-up { animation: fadeUp 0.4s ease both; }
+        @keyframes fadeUp { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
       `}</style>
 
       <Toaster
         position="top-center"
         toastOptions={{
           style: {
-            background: '#0d1e38', color: '#e0eeff',
-            border: '1px solid rgba(30,111,255,0.25)',
-            borderRadius: '12px', fontSize: '13px',
-            fontFamily: 'DM Sans, sans-serif',
+            background: '#fff',
+            color: '#0c2340',
+            border: '1.5px solid #bae6fd',
+            borderRadius: '14px',
+            fontSize: '13px',
+            fontFamily: "'DM Sans', sans-serif",
+            boxShadow: '0 4px 20px rgba(14,165,233,0.18)',
           },
         }}
       />
 
-      <div className="zl-root">
-        <div className="zl-bg-glow" />
+      <div className="zl-page">
+        <div className="zl-bubble zl-b1" />
+        <div className="zl-bubble zl-b2" />
+        <div className="zl-bubble zl-b3" />
+        <div className="zl-bubble zl-b4" />
+
         <div className="zl-card">
 
-          {/* TOP BAR */}
-          <div className="zl-topbar">
+          {/* Hero logo con botón volver encima */}
+          <div className="zl-logo-hero">
+            <img src="/zeno-logo.png" alt="Zeno Marketing" />
             <button onClick={() => navigate('/')} className="zl-btn-volver">
-              <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6" /></svg>
+              <ArrowLeft size={13} />
               Volver
             </button>
           </div>
 
-          {/* LOGO */}
-          <div className="zl-logo-wrap">
-            <img src="/zeno-logo.png" alt="Zeno Marketing" className="zl-logo-img" />
-            <span className="zl-badge">Inicio Sesión</span>
+          {/* Título */}
+          <div className="zl-title-block">
+            <h1 className="zl-title">Zeno Marketing</h1>
+            <p className="zl-subtitle">Acceso al panel de administración</p>
           </div>
 
           <div className="zl-divider" />
 
-          {/* BODY */}
-          <div className="zl-body">
-            <div className="zl-accent-line" />
-            <p className="zl-subtitle">Ingresa tus credenciales para continuar</p>
+          {/* Body */}
+          <div className="zl-body zl-fade-up">
 
-            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+            {/* Icono + badge */}
+            <div className="zl-icon-wrap">
+              <div className="zl-icon-circle">
+                <Lock size={24} strokeWidth={1.8} />
+              </div>
+            </div>
+
+            <div className="zl-badge-wrap">
+              <div className="zl-badge-line" />
+              <span className="zl-badge-text">Inicio de Sesión</span>
+              <div className="zl-badge-line right" />
+            </div>
+
+            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               <div>
-                <label className="zl-label">Usuario</label>
+                <label className="zl-lbl">Usuario</label>
                 <div className="zl-input-wrap">
+                  <User size={17} className="zl-input-icon" />
                   <input
                     type="email"
                     value={email}
@@ -293,15 +378,13 @@ export default function Login() {
                     required
                     autoComplete="email"
                   />
-                  <span className="zl-input-icon">
-                    <User size={17} />
-                  </span>
                 </div>
               </div>
 
               <div>
-                <label className="zl-label">Contraseña</label>
+                <label className="zl-lbl">Contraseña</label>
                 <div className="zl-input-wrap">
+                  <Lock size={17} className="zl-input-icon" />
                   <input
                     type="password"
                     value={password}
@@ -311,19 +394,19 @@ export default function Login() {
                     required
                     autoComplete="current-password"
                   />
-                  <span className="zl-input-icon">
-                    <Lock size={17} />
-                  </span>
                 </div>
               </div>
 
               <button type="submit" disabled={loading} className="zl-btn-primary">
                 {loading && <span className="zl-spinner" />}
-                {loading ? 'Ingresando...' : 'Ingresar'}
+                {loading ? 'Ingresando...' : 'Ingresar al panel'}
               </button>
             </form>
           </div>
 
+          <div className="zl-footer">
+            Acceso exclusivo para administradores del sistema
+          </div>
         </div>
       </div>
     </>

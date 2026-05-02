@@ -187,90 +187,467 @@ export default function EventoDetalle() {
     }
   }
 
-  if (!evento) return <div className="p-6 text-white">Cargando evento...</div>
+  if (!evento) return (
+    <>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Kameron:wght@400;700&family=DM+Sans:wght@400;500;600;700&display=swap');
+      `}</style>
+      <div style={{
+        minHeight: '100vh',
+        background: 'radial-gradient(ellipse at 30% 20%, #e0f7ff 0%, transparent 60%), radial-gradient(ellipse at 80% 80%, #cde8f5 0%, transparent 55%), radial-gradient(ellipse at 60% 50%, #93c5fd55 0%, transparent 50%), #e8f4fd',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        fontFamily: "'Kameron', serif", color: '#0369a1', fontSize: 20,
+      }}>
+        Cargando evento...
+      </div>
+    </>
+  )
 
   return (
-    <div className="min-h-screen bg-zeno-dark p-6">
-      <div className="max-w-7xl mx-auto">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold text-zeno-blue">{evento.nombre}</h1>
-          <button
-            onClick={() => navigate('/dashboard')}
-            className="bg-zeno-orange px-4 py-2 rounded-lg"
-          >
-            ← Volver al Dashboard
-          </button>
-        </div>
+    <>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Kameron:wght@400;700&family=DM+Sans:wght@400;500;600;700&display=swap');
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-        <div className="grid grid-cols-3 gap-4 my-6">
-          <div className="bg-zeno-card p-4 rounded-lg text-center border border-zeno-border">
-            <p className="text-zeno-text-sec text-sm">Total registrados</p>
-            <p className="text-3xl font-bold text-zeno-blue">{stats.total}</p>
-            <p className="text-sm text-zeno-text-sec mt-1">
-              Empleados: {totalEmpleados} | Invitados: {totalInvitados}
-            </p>
+        .ed-page {
+          min-height: 100vh;
+          background:
+            radial-gradient(ellipse at 10% 0%, #e0f7ff 0%, transparent 55%),
+            radial-gradient(ellipse at 90% 10%, #cde8f5 0%, transparent 50%),
+            radial-gradient(ellipse at 50% 100%, #93c5fd55 0%, transparent 60%),
+            radial-gradient(ellipse at 20% 60%, #7dd3fc44 0%, transparent 40%),
+            #eaf6ff;
+          font-family: 'DM Sans', sans-serif;
+          position: relative;
+          overflow-x: hidden;
+          padding: clamp(16px, 3vw, 40px);
+        }
+
+        /* Burbujas animadas */
+        .ed-bubble {
+          position: fixed;
+          border-radius: 50%;
+          pointer-events: none;
+          z-index: 0;
+          animation: edFloat linear infinite;
+        }
+        .ed-bubble-1 {
+          width: clamp(200px, 30vw, 420px);
+          height: clamp(200px, 30vw, 420px);
+          top: -80px; left: -80px;
+          background: radial-gradient(circle at 35% 35%, #bae6fd 0%, #7dd3fc55 50%, transparent 70%);
+          animation-duration: 9s;
+        }
+        .ed-bubble-2 {
+          width: clamp(140px, 20vw, 280px);
+          height: clamp(140px, 20vw, 280px);
+          top: 30%; right: -60px;
+          background: radial-gradient(circle at 40% 40%, #e0f2fe 0%, #93c5fd44 50%, transparent 70%);
+          animation-duration: 12s; animation-delay: -3s;
+        }
+        .ed-bubble-3 {
+          width: clamp(100px, 15vw, 200px);
+          height: clamp(100px, 15vw, 200px);
+          bottom: 10%; left: 15%;
+          background: radial-gradient(circle at 40% 40%, #bfdbfe 0%, #60a5fa33 50%, transparent 70%);
+          animation-duration: 10s; animation-delay: -5s;
+        }
+        .ed-bubble-4 {
+          width: clamp(160px, 22vw, 320px);
+          height: clamp(160px, 22vw, 320px);
+          bottom: -60px; right: 10%;
+          background: radial-gradient(circle at 40% 35%, #e0f7ff 0%, #7dd3fc33 50%, transparent 70%);
+          animation-duration: 14s; animation-delay: -7s;
+        }
+        @keyframes edFloat {
+          0% { transform: translateY(0px) rotate(0deg); }
+          33% { transform: translateY(-18px) rotate(2deg); }
+          66% { transform: translateY(-8px) rotate(-1deg); }
+          100% { transform: translateY(0px) rotate(0deg); }
+        }
+
+        .ed-inner {
+          position: relative; z-index: 1;
+          max-width: 900px;
+          margin: 0 auto;
+        }
+
+        /* Header */
+        .ed-header {
+          display: flex;
+          align-items: flex-start;
+          justify-content: space-between;
+          flex-wrap: wrap;
+          gap: 14px;
+          margin-bottom: clamp(20px, 3vw, 32px);
+        }
+        .ed-header-left { display: flex; flex-direction: column; gap: 6px; }
+        .ed-breadcrumb {
+          font-size: clamp(9px, 1vw, 11px);
+          font-weight: 700;
+          letter-spacing: 0.18em;
+          text-transform: uppercase;
+          color: #0369a1;
+        }
+        .ed-title {
+          font-family: 'Kameron', serif;
+          font-size: clamp(22px, 5vw, 36px);
+          font-weight: 700;
+          color: #0c2340;
+          line-height: 1.15;
+        }
+
+        .ed-btn-back {
+          display: flex; align-items: center; gap: 7px;
+          padding: clamp(10px, 1.5vw, 12px) clamp(16px, 2.5vw, 22px);
+          border-radius: clamp(16px, 2.5vw, 22px);
+          border: 1.5px solid rgba(56,189,248,0.4);
+          background: rgba(240,249,255,0.5);
+          color: #0369a1; font-weight: 700;
+          font-family: 'DM Sans', sans-serif;
+          font-size: clamp(12px, 1.5vw, 14px);
+          cursor: pointer; transition: all 0.2s;
+          backdrop-filter: blur(8px);
+          white-space: nowrap;
+        }
+        .ed-btn-back:hover {
+          background: rgba(240,249,255,0.85);
+          border-color: rgba(56,189,248,0.7);
+          transform: translateY(-1px);
+        }
+
+        /* Divider */
+        .ed-divider {
+          height: 1px;
+          background: linear-gradient(90deg, transparent, rgba(56,189,248,0.3), transparent);
+          margin-bottom: clamp(16px, 2.5vw, 28px);
+        }
+
+        /* Stats grid */
+        .ed-stats-grid {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: clamp(10px, 2vw, 18px);
+          margin-bottom: clamp(16px, 2.5vw, 26px);
+        }
+        @media (max-width: 520px) {
+          .ed-stats-grid { grid-template-columns: 1fr; }
+        }
+
+        .ed-stat-card {
+          background: rgba(255,255,255,0.88);
+          backdrop-filter: blur(28px);
+          border: 1.5px solid rgba(255,255,255,0.9);
+          box-shadow: 0 8px 32px rgba(14,120,180,0.14), inset 0 1px 0 rgba(255,255,255,1);
+          border-radius: clamp(18px, 3vw, 28px);
+          padding: clamp(16px, 2.5vw, 24px);
+          text-align: center;
+          position: relative;
+          overflow: hidden;
+          animation: edFadeUp 0.38s ease both;
+        }
+        .ed-stat-card:nth-child(2) { animation-delay: 0.06s; }
+        .ed-stat-card:nth-child(3) { animation-delay: 0.12s; }
+        @keyframes edFadeUp {
+          from { transform: translateY(12px); opacity: 0; }
+          to { transform: translateY(0); opacity: 1; }
+        }
+
+        .ed-stat-bar {
+          position: absolute;
+          top: 0; left: 0; right: 0; height: 4px;
+          background: linear-gradient(90deg, #38bdf8, #7dd3fc);
+          background-size: 200% 100%;
+          animation: edShimmer 2s linear infinite;
+        }
+        .ed-stat-bar.green { background: linear-gradient(90deg, #16a34a, #22c55e, #86efac); background-size: 200% 100%; }
+        .ed-stat-bar.orange { background: linear-gradient(90deg, #c17f0a, #f59e0b, #fcd34d); background-size: 200% 100%; }
+        @keyframes edShimmer {
+          0% { background-position: 0% 50%; }
+          100% { background-position: 200% 50%; }
+        }
+
+        .ed-stat-label {
+          font-size: clamp(9px, 1vw, 11px);
+          font-weight: 700;
+          letter-spacing: 0.18em;
+          text-transform: uppercase;
+          color: #0369a1;
+          margin-bottom: 8px;
+        }
+        .ed-stat-number {
+          font-family: 'Kameron', serif;
+          font-size: clamp(32px, 6vw, 48px);
+          font-weight: 700;
+          line-height: 1;
+          margin-bottom: 6px;
+        }
+        .ed-stat-number.blue { color: #0284c7; }
+        .ed-stat-number.green { color: #16a34a; }
+        .ed-stat-number.orange { color: #c17f0a; }
+        .ed-stat-sub {
+          font-size: clamp(10px, 1.2vw, 12px);
+          color: #475569;
+          font-weight: 500;
+        }
+
+        /* Acciones */
+        .ed-actions {
+          display: flex;
+          justify-content: flex-end;
+          gap: clamp(8px, 1.5vw, 12px);
+          margin-bottom: clamp(14px, 2vw, 22px);
+          flex-wrap: wrap;
+        }
+
+        .ed-btn-primary {
+          display: flex; align-items: center; gap: 7px;
+          padding: clamp(10px, 1.5vw, 13px) clamp(16px, 2.5vw, 22px);
+          border-radius: clamp(16px, 2.5vw, 22px);
+          background: linear-gradient(135deg, #38bdf8 0%, #0ea5e9 50%, #0284c7 100%);
+          border: none;
+          color: #fff;
+          font-family: 'Kameron', serif; font-weight: 700;
+          font-size: clamp(12px, 1.5vw, 14px);
+          cursor: pointer;
+          box-shadow: 0 6px 24px rgba(14,165,233,0.4);
+          transition: all 0.2s;
+          white-space: nowrap;
+          min-height: 44px;
+        }
+        .ed-btn-primary:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 10px 32px rgba(14,165,233,0.5);
+        }
+
+        .ed-btn-success {
+          display: flex; align-items: center; gap: 7px;
+          padding: clamp(10px, 1.5vw, 13px) clamp(16px, 2.5vw, 22px);
+          border-radius: clamp(16px, 2.5vw, 22px);
+          background: linear-gradient(135deg, #16a34a 0%, #22c55e 100%);
+          border: none;
+          color: #fff;
+          font-family: 'Kameron', serif; font-weight: 700;
+          font-size: clamp(12px, 1.5vw, 14px);
+          cursor: pointer;
+          box-shadow: 0 6px 24px rgba(22,163,74,0.35);
+          transition: all 0.2s;
+          white-space: nowrap;
+          min-height: 44px;
+        }
+        .ed-btn-success:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 10px 32px rgba(22,163,74,0.45);
+        }
+        .ed-btn-success:disabled {
+          opacity: 0.6; cursor: not-allowed; transform: none;
+        }
+
+        /* Card principal */
+        .ed-card {
+          background: rgba(255,255,255,0.88);
+          backdrop-filter: blur(28px);
+          border: 1.5px solid rgba(255,255,255,0.9);
+          box-shadow: 0 40px 100px rgba(14,120,180,0.22), 0 16px 40px rgba(14,120,180,0.12), inset 0 1px 0 rgba(255,255,255,1);
+          border-radius: clamp(24px, 4vw, 36px);
+          overflow: hidden;
+          margin-bottom: clamp(14px, 2vw, 22px);
+          animation: edFadeUp 0.38s 0.18s ease both;
+        }
+
+        .ed-card-header {
+          display: flex; align-items: center;
+          justify-content: space-between;
+          padding: clamp(16px, 2.5vw, 24px) clamp(20px, 3vw, 32px);
+          border-bottom: 1px solid rgba(147,197,253,0.25);
+        }
+        .ed-card-title {
+          font-family: 'Kameron', serif;
+          font-size: clamp(15px, 2.5vw, 20px);
+          font-weight: 700;
+          color: #0c2340;
+        }
+
+        .ed-card-body {
+          padding: clamp(16px, 2.5vw, 24px) clamp(20px, 3vw, 32px);
+        }
+
+        /* Sorteos lista */
+        .ed-sorteos-list { display: flex; flex-direction: column; gap: 10px; }
+        .ed-sorteo-item {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 12px;
+          padding: clamp(12px, 2vw, 18px) clamp(14px, 2.5vw, 22px);
+          background: rgba(240,249,255,0.6);
+          border: 1.5px solid rgba(147,197,253,0.35);
+          border-radius: clamp(14px, 2vw, 20px);
+          transition: all 0.2s;
+          flex-wrap: wrap;
+        }
+        .ed-sorteo-item:hover {
+          background: rgba(240,249,255,0.9);
+          border-color: rgba(56,189,248,0.5);
+          transform: translateY(-1px);
+          box-shadow: 0 4px 16px rgba(14,120,180,0.1);
+        }
+        .ed-sorteo-nombre {
+          font-family: 'Kameron', serif;
+          font-weight: 700;
+          font-size: clamp(14px, 2vw, 17px);
+          color: #0c2340;
+        }
+        .ed-sorteo-meta {
+          font-size: clamp(10px, 1.2vw, 12px);
+          color: #475569;
+          margin-top: 3px;
+        }
+        .ed-badge {
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+          padding: 4px 12px;
+          border-radius: 50px;
+          font-size: 11px; font-weight: 700;
+          letter-spacing: 0.06em;
+        }
+        .ed-badge-activo {
+          background: rgba(22,163,74,0.1);
+          border: 1px solid rgba(22,163,74,0.3);
+          color: #16a34a;
+        }
+        .ed-badge-finalizado {
+          background: rgba(100,116,139,0.1);
+          border: 1px solid rgba(100,116,139,0.3);
+          color: #475569;
+        }
+
+        .ed-empty {
+          text-align: center;
+          padding: clamp(24px, 4vw, 40px);
+          color: #475569;
+          font-size: clamp(13px, 1.5vw, 15px);
+        }
+
+        /* Footer */
+        .ed-footer {
+          text-align: center;
+          margin-top: clamp(24px, 4vw, 40px);
+          padding-top: clamp(12px, 2vw, 18px);
+          border-top: 1px solid rgba(147,197,253,0.3);
+          font-size: clamp(10px, 1.2vw, 12px);
+          color: #475569;
+          font-weight: 500;
+        }
+      `}</style>
+
+      <div className="ed-page">
+        {/* Burbujas */}
+        <div className="ed-bubble ed-bubble-1" />
+        <div className="ed-bubble ed-bubble-2" />
+        <div className="ed-bubble ed-bubble-3" />
+        <div className="ed-bubble ed-bubble-4" />
+
+        <div className="ed-inner">
+          {/* Header */}
+          <div className="ed-header">
+            <div className="ed-header-left">
+              <span className="ed-breadcrumb">Zeno Marketing · Evento</span>
+              <h1 className="ed-title">{evento.nombre}</h1>
+            </div>
+            <button onClick={() => navigate('/dashboard')} className="ed-btn-back">
+              ← Volver al Dashboard
+            </button>
           </div>
-          <div className="bg-zeno-card p-4 rounded-lg text-center border border-zeno-border">
-            <p className="text-zeno-text-sec text-sm">Confirmados</p>
-            <p className="text-3xl font-bold text-zeno-success">{totalConfirmados}</p>
-            <p className="text-sm text-zeno-text-sec mt-1">
-              C1: {confirmadosPorNivel.C1} | C2: {confirmadosPorNivel.C2} | C3: {confirmadosPorNivel.C3}
-            </p>
+
+          <div className="ed-divider" />
+
+          {/* Stats */}
+          <div className="ed-stats-grid">
+            <div className="ed-stat-card">
+              <div className="ed-stat-bar" />
+              <div className="ed-stat-label">Total registrados</div>
+              <div className="ed-stat-number blue">{stats.total}</div>
+              <div className="ed-stat-sub">Empleados: {totalEmpleados} · Invitados: {totalInvitados}</div>
+            </div>
+            <div className="ed-stat-card">
+              <div className="ed-stat-bar green" />
+              <div className="ed-stat-label">Confirmados</div>
+              <div className="ed-stat-number green">{totalConfirmados}</div>
+              <div className="ed-stat-sub">C1: {confirmadosPorNivel.C1} · C2: {confirmadosPorNivel.C2} · C3: {confirmadosPorNivel.C3}</div>
+            </div>
+            <div className="ed-stat-card">
+              <div className="ed-stat-bar orange" />
+              <div className="ed-stat-label">Invitados</div>
+              <div className="ed-stat-number orange">{totalInvitados}</div>
+              <div className="ed-stat-sub">Se unieron: {invitadosUnidos}</div>
+            </div>
           </div>
-          <div className="bg-zeno-card p-4 rounded-lg text-center border border-zeno-border">
-            <p className="text-zeno-text-sec text-sm">Invitados</p>
-            <p className="text-3xl font-bold text-zeno-orange">{totalInvitados}</p>
-            <p className="text-sm text-zeno-text-sec mt-1">
-              Se unieron: {invitadosUnidos}
-            </p>
+
+          {/* Acciones */}
+          <div className="ed-actions">
+            <button onClick={() => navigate(`/participantes/${evento.id}`)} className="ed-btn-primary">
+              📋 Gestionar participantes
+            </button>
+            <button onClick={generarReportePDF} disabled={generandoReporte} className="ed-btn-success">
+              {generandoReporte ? '⏳ Generando...' : '📄 Generar reporte'}
+            </button>
           </div>
-        </div>
 
-        <div className="flex justify-end gap-3 mb-4">
-          <button
-            onClick={() => navigate(`/participantes/${evento.id}`)}
-            className="bg-zeno-blue px-4 py-2 rounded-lg text-sm font-semibold"
-          >
-            📋 Gestionar participantes
-          </button>
-          <button
-            onClick={generarReportePDF}
-            disabled={generandoReporte}
-            className="bg-green-700 px-4 py-2 rounded-lg text-sm font-semibold disabled:opacity-50 flex items-center gap-2"
-          >
-            {generandoReporte ? 'Generando...' : '📄 Generar reporte'}
-          </button>
-        </div>
+          {/* Crear Sorteo */}
+          <CrearSorteo
+            eventoId={evento.id}
+            token={token}
+            onSorteoCreado={handleSorteoCreado}
+          />
 
-        <CrearSorteo
-          eventoId={evento.id}
-          token={token}
-          onSorteoCreado={handleSorteoCreado}
-        />
-
-        <div className="mt-6 bg-zeno-card rounded-lg p-4 border border-zeno-border">
-          <h2 className="text-xl font-bold text-zeno-orange mb-4">Sorteos del evento</h2>
-          {sorteos.length === 0 && (
-            <p className="text-zeno-text-sec">No hay sorteos creados. Usa el botón "+ Nuevo sorteo" para crear uno.</p>
-          )}
-          <div className="space-y-2">
-            {sorteos.map(s => (
-              <div key={s.id} className="flex justify-between items-center p-3 bg-zeno-dark rounded-lg border border-zeno-border">
-                <div>
-                  <p className="font-semibold">{s.nombre}</p>
-                  <p className="text-sm text-zeno-text-sec">Estado: {s.estado} | Filtro: {s.nivel_filtro}</p>
+          {/* Sorteos del evento */}
+          <div className="ed-card" style={{ animationDelay: '0.22s' }}>
+            <div className="ed-card-header">
+              <span className="ed-card-title">🎡 Sorteos del evento</span>
+              <span style={{ fontSize: 12, color: '#475569', fontWeight: 600 }}>
+                {sorteos.length} sorteo{sorteos.length !== 1 ? 's' : ''}
+              </span>
+            </div>
+            <div className="ed-card-body">
+              {sorteos.length === 0 ? (
+                <div className="ed-empty">
+                  No hay sorteos creados aún.<br />
+                  <span style={{ color: '#0369a1', fontWeight: 700 }}>Usa el formulario de arriba para crear uno.</span>
                 </div>
-                <button
-                  onClick={() => navigate(`/sorteos/${s.id}`)}
-                  className="bg-zeno-blue px-4 py-1 rounded text-sm hover:bg-blue-700 transition"
-                >
-                  Administrar sorteo
-                </button>
-              </div>
-            ))}
+              ) : (
+                <div className="ed-sorteos-list">
+                  {sorteos.map(s => (
+                    <div key={s.id} className="ed-sorteo-item">
+                      <div>
+                        <div className="ed-sorteo-nombre">{s.nombre}</div>
+                        <div className="ed-sorteo-meta">Filtro de nivel: <strong style={{ color: '#0369a1' }}>{s.nivel_filtro}</strong></div>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+                        <span className={`ed-badge ${s.estado === 'FINALIZADO' ? 'ed-badge-finalizado' : 'ed-badge-activo'}`}>
+                          {s.estado === 'FINALIZADO' ? '● Finalizado' : '● Activo'}
+                        </span>
+                        <button
+                          onClick={() => navigate(`/sorteos/${s.id}`)}
+                          className="ed-btn-primary"
+                          style={{ padding: '8px 18px', fontSize: 12, minHeight: 36 }}
+                        >
+                          Administrar →
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="ed-footer">
+            Zeno Marketing Platform · Gestión de eventos y sorteos en tiempo real
           </div>
         </div>
       </div>
-    </div>
+    </>
   )
 }

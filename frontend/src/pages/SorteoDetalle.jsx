@@ -49,12 +49,10 @@ export default function SorteoDetalle() {
     setUltimoGanador(null)
     setNumeroParaRuleta(null)
 
-    // Llamar al servidor de inmediato, en paralelo con la animación
     try {
       const res = await axios.post(`/sorteos/girar`, { sorteo_id: id }, {
         headers: { Authorization: `Bearer ${token}` }
       })
-      // Pasamos el número a la ruleta para que frene en él
       setNumeroParaRuleta(res.data.numero)
       setUltimoGanador(res.data)
     } catch (err) {
@@ -118,14 +116,19 @@ export default function SorteoDetalle() {
   }
 
   if (!sorteo) return (
-    <div style={{
-      minHeight: '100vh',
-      background: 'linear-gradient(135deg, #0d1b4b 0%, #1a1060 40%, #0e2060 100%)',
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-      fontFamily: "'Kameron', serif", color: 'rgba(180,200,255,0.6)', fontSize: 18,
-    }}>
-      Cargando sorteo...
-    </div>
+    <>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Kameron:wght@400;700&family=DM+Sans:wght@400;500;600;700&display=swap');
+      `}</style>
+      <div style={{
+        minHeight: '100vh',
+        background: 'radial-gradient(ellipse at 30% 20%, #e0f7ff 0%, transparent 60%), radial-gradient(ellipse at 80% 80%, #cde8f5 0%, transparent 55%), #eaf6ff',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        fontFamily: "'Kameron', serif", color: '#0369a1', fontSize: 20,
+      }}>
+        Cargando sorteo...
+      </div>
+    </>
   )
 
   const finalizado = sorteo.estado === 'FINALIZADO'
@@ -133,386 +136,492 @@ export default function SorteoDetalle() {
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Kameron:wght@400;700&family=DM+Sans:wght@300;400;500&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Kameron:wght@400;700&family=DM+Sans:wght@400;500;600;700&display=swap');
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-        .sd-root {
+        .sdt-page {
           min-height: 100vh;
           background:
-            radial-gradient(ellipse at 20% 0%, rgba(120,80,255,0.22) 0%, transparent 55%),
-            radial-gradient(ellipse at 80% 10%, rgba(30,111,255,0.28) 0%, transparent 50%),
-            radial-gradient(ellipse at 50% 100%, rgba(20,60,180,0.3) 0%, transparent 60%),
-            linear-gradient(160deg, #0c1a50 0%, #160d48 35%, #0b1a55 65%, #0d1440 100%);
+            radial-gradient(ellipse at 10% 0%, #e0f7ff 0%, transparent 55%),
+            radial-gradient(ellipse at 90% 10%, #cde8f5 0%, transparent 50%),
+            radial-gradient(ellipse at 50% 100%, #93c5fd55 0%, transparent 60%),
+            radial-gradient(ellipse at 20% 60%, #7dd3fc44 0%, transparent 40%),
+            #eaf6ff;
           font-family: 'DM Sans', sans-serif;
           position: relative;
           overflow-x: hidden;
+          padding: clamp(16px, 3vw, 40px);
         }
 
-        .sd-root::before {
-          content: '';
-          position: fixed; inset: 0;
-          background-image: radial-gradient(rgba(100,140,255,0.06) 1px, transparent 1px);
-          background-size: 26px 26px;
+        /* Burbujas */
+        .sdt-bubble {
+          position: fixed; border-radius: 50%;
           pointer-events: none; z-index: 0;
+          animation: sdtFloat linear infinite;
+        }
+        .sdt-bubble-1 {
+          width: clamp(200px, 28vw, 400px); height: clamp(200px, 28vw, 400px);
+          top: -80px; left: -80px;
+          background: radial-gradient(circle at 35% 35%, #bae6fd 0%, #7dd3fc55 50%, transparent 70%);
+          animation-duration: 9s;
+        }
+        .sdt-bubble-2 {
+          width: clamp(130px, 18vw, 260px); height: clamp(130px, 18vw, 260px);
+          top: 30%; right: -50px;
+          background: radial-gradient(circle at 40% 40%, #e0f2fe 0%, #93c5fd44 50%, transparent 70%);
+          animation-duration: 12s; animation-delay: -4s;
+        }
+        .sdt-bubble-3 {
+          width: clamp(90px, 13vw, 180px); height: clamp(90px, 13vw, 180px);
+          bottom: 12%; left: 12%;
+          background: radial-gradient(circle at 40% 40%, #bfdbfe 0%, #60a5fa33 50%, transparent 70%);
+          animation-duration: 10s; animation-delay: -6s;
+        }
+        .sdt-bubble-4 {
+          width: clamp(150px, 20vw, 300px); height: clamp(150px, 20vw, 300px);
+          bottom: -50px; right: 8%;
+          background: radial-gradient(circle at 40% 35%, #e0f7ff 0%, #7dd3fc33 50%, transparent 70%);
+          animation-duration: 14s; animation-delay: -8s;
+        }
+        @keyframes sdtFloat {
+          0% { transform: translateY(0px) rotate(0deg); }
+          33% { transform: translateY(-16px) rotate(2deg); }
+          66% { transform: translateY(-7px) rotate(-1deg); }
+          100% { transform: translateY(0px) rotate(0deg); }
         }
 
-        .sd-root::after {
-          content: '';
-          position: fixed;
-          top: -150px; left: 50%;
-          transform: translateX(-50%);
-          width: 700px; height: 400px;
-          background: radial-gradient(ellipse, rgba(80,100,255,0.18) 0%, transparent 65%);
-          pointer-events: none; z-index: 0;
-        }
-
-        .sd-inner {
+        .sdt-inner {
           position: relative; z-index: 1;
           max-width: 960px;
           margin: 0 auto;
-          padding: 20px 16px 48px;
         }
 
-        .sd-topbar {
+        /* Topbar */
+        .sdt-topbar {
           display: flex; align-items: center;
           justify-content: space-between;
-          margin-bottom: 22px;
-          flex-wrap: wrap; gap: 10px;
+          margin-bottom: clamp(18px, 3vw, 30px);
+          flex-wrap: wrap; gap: 12px;
         }
-        .sd-topbar-left { display: flex; align-items: center; gap: 12px; }
-        .sd-btn-back {
-          display: flex; align-items: center; gap: 6px;
-          background: rgba(255,255,255,0.07);
-          border: 1px solid rgba(255,255,255,0.12);
-          color: #b0c8ff;
+        .sdt-topbar-left { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+
+        .sdt-btn-back {
+          display: flex; align-items: center; gap: 7px;
+          padding: clamp(9px, 1.5vw, 11px) clamp(14px, 2vw, 20px);
+          border-radius: clamp(16px, 2.5vw, 22px);
+          border: 1.5px solid rgba(56,189,248,0.4);
+          background: rgba(240,249,255,0.5);
+          color: #0369a1;
           font-family: 'DM Sans', sans-serif;
-          font-size: 13px; font-weight: 500;
-          padding: 8px 16px; border-radius: 50px;
+          font-size: clamp(12px, 1.5vw, 14px); font-weight: 700;
           cursor: pointer; transition: all 0.2s;
           backdrop-filter: blur(8px);
+          min-height: 44px;
         }
-        .sd-btn-back:hover { background: rgba(255,255,255,0.12); color: #d0e0ff; }
+        .sdt-btn-back:hover {
+          background: rgba(240,249,255,0.85);
+          border-color: rgba(56,189,248,0.7);
+          transform: translateY(-1px);
+        }
 
-        .sd-title {
+        .sdt-page-title {
           font-family: 'Kameron', serif;
-          font-size: clamp(18px, 3.5vw, 26px);
+          font-size: clamp(18px, 3.5vw, 28px);
           font-weight: 700;
-          color: #e8f0ff;
-          letter-spacing: 0.02em;
+          color: #0c2340;
         }
-        .sd-title span {
-          background: linear-gradient(90deg, #5b9bff, #ff8c00);
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-          background-clip: text;
-        }
+        .sdt-page-title span { color: #0284c7; }
 
-        .sd-btn-finalizar {
-          display: flex; align-items: center; gap: 6px;
-          background: rgba(220,38,38,0.1);
-          border: 1px solid rgba(220,38,38,0.28);
-          color: #f87171;
+        .sdt-btn-finalizar {
+          display: flex; align-items: center; gap: 7px;
+          padding: clamp(9px, 1.5vw, 11px) clamp(14px, 2vw, 20px);
+          border-radius: clamp(16px, 2.5vw, 22px);
+          border: 1.5px solid rgba(220,38,38,0.3);
+          background: rgba(254,242,242,0.6);
+          color: #dc2626;
           font-family: 'DM Sans', sans-serif;
-          font-size: 13px; font-weight: 500;
-          padding: 8px 16px; border-radius: 50px;
+          font-size: clamp(12px, 1.5vw, 14px); font-weight: 700;
           cursor: pointer; transition: all 0.2s;
+          min-height: 44px;
         }
-        .sd-btn-finalizar:hover { background: rgba(220,38,38,0.18); }
+        .sdt-btn-finalizar:hover {
+          background: rgba(254,226,226,0.85);
+          border-color: rgba(220,38,38,0.5);
+        }
 
-        .sd-grid {
+        .sdt-divider {
+          height: 1px;
+          background: linear-gradient(90deg, transparent, rgba(56,189,248,0.3), transparent);
+          margin-bottom: clamp(16px, 2.5vw, 26px);
+        }
+
+        /* Grid principal */
+        .sdt-grid {
           display: grid;
           grid-template-columns: 1fr;
-          gap: 16px;
+          gap: clamp(12px, 2vw, 18px);
         }
-        @media (min-width: 680px) {
-          .sd-grid { grid-template-columns: 1fr 1fr; }
+        @media (min-width: 640px) {
+          .sdt-grid { grid-template-columns: 1fr 1fr; }
         }
 
-        .sd-card {
-          background: rgba(255,255,255,0.05);
-          backdrop-filter: blur(16px);
-          -webkit-backdrop-filter: blur(16px);
-          border: 1px solid rgba(255,255,255,0.1);
-          border-radius: 20px;
+        /* Card base */
+        .sdt-card {
+          background: rgba(255,255,255,0.88);
+          backdrop-filter: blur(28px);
+          border: 1.5px solid rgba(255,255,255,0.9);
+          box-shadow: 0 8px 32px rgba(14,120,180,0.14), 0 2px 8px rgba(14,120,180,0.08), inset 0 1px 0 rgba(255,255,255,1);
+          border-radius: clamp(18px, 3vw, 28px);
           overflow: hidden;
           position: relative;
-          box-shadow: 0 8px 32px rgba(0,0,30,0.3);
+          animation: sdtFadeUp 0.38s ease both;
         }
-        .sd-card::before {
-          content: '';
-          position: absolute; top: 0; left: 0; right: 0; height: 1.5px;
-          background: linear-gradient(90deg, rgba(100,140,255,0.6), rgba(255,140,0,0.5), rgba(100,140,255,0.3));
+        .sdt-card:nth-child(2) { animation-delay: 0.06s; }
+        .sdt-card:nth-child(3) { animation-delay: 0.12s; }
+        .sdt-card:nth-child(4) { animation-delay: 0.18s; }
+        @keyframes sdtFadeUp {
+          from { transform: translateY(12px); opacity: 0; }
+          to { transform: translateY(0); opacity: 1; }
         }
-        .sd-card-body { padding: 20px; }
 
-        .sd-card-title {
-          font-family: 'Kameron', serif;
-          font-size: 13px; font-weight: 700;
-          color: rgba(160,190,255,0.65);
-          letter-spacing: 0.1em; text-transform: uppercase;
-          margin-bottom: 16px;
+        .sdt-card-bar {
+          position: absolute; top: 0; left: 0; right: 0; height: 4px;
+          background: linear-gradient(90deg, #38bdf8, #7dd3fc, #38bdf8);
+          background-size: 200% 100%;
+          animation: sdtShimmer 2s linear infinite;
+        }
+        .sdt-card-bar.gold { background: linear-gradient(90deg, #c17f0a, #f59e0b, #fcd34d, #c17f0a); background-size: 200% 100%; }
+        .sdt-card-bar.green { background: linear-gradient(90deg, #16a34a, #22c55e, #86efac, #16a34a); background-size: 200% 100%; }
+        @keyframes sdtShimmer {
+          0% { background-position: 0% 50%; }
+          100% { background-position: 200% 50%; }
+        }
+
+        .sdt-card-body { padding: clamp(16px, 2.5vw, 24px); }
+
+        .sdt-card-label {
+          font-size: clamp(9px, 1vw, 11px);
+          font-weight: 700;
+          letter-spacing: 0.18em;
+          text-transform: uppercase;
+          color: #0369a1;
+          margin-bottom: 14px;
           display: flex; align-items: center; gap: 8px;
         }
 
-        .sd-stats-grid {
+        /* Stats grid dentro de card */
+        .sdt-stats-grid {
           display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
         }
-        .sd-stat {
-          background: rgba(255,255,255,0.04);
-          border: 1px solid rgba(255,255,255,0.08);
-          border-radius: 12px; padding: 12px; text-align: center;
+        .sdt-stat-item {
+          background: rgba(240,249,255,0.7);
+          border: 1.5px solid rgba(147,197,253,0.35);
+          border-radius: clamp(12px, 2vw, 18px);
+          padding: 12px; text-align: center;
         }
-        .sd-stat-label {
-          font-size: 10px; font-weight: 500;
-          letter-spacing: 0.1em; text-transform: uppercase;
-          color: rgba(160,190,255,0.4); margin-bottom: 5px;
+        .sdt-stat-lbl {
+          font-size: 10px; font-weight: 700;
+          letter-spacing: 0.12em; text-transform: uppercase;
+          color: #0369a1; margin-bottom: 6px;
         }
-        .sd-stat-value {
+        .sdt-stat-val {
           font-family: 'Kameron', serif;
-          font-size: 24px; font-weight: 700; color: #e8f0ff;
+          font-size: clamp(22px, 4vw, 30px);
+          font-weight: 700; color: #0c2340;
         }
-        .sd-stat-value.blue { color: #5b9bff; }
-        .sd-stat-value.orange { color: #ff8c00; }
+        .sdt-stat-val.blue { color: #0284c7; }
+        .sdt-stat-val.gold { color: #c17f0a; }
 
-        .sd-nivel-badge {
-          display: inline-flex; padding: 4px 14px; border-radius: 50px;
-          font-family: 'Kameron', serif; font-size: 14px; font-weight: 700;
-          background: rgba(100,140,255,0.15);
-          border: 1px solid rgba(100,140,255,0.3); color: #90b8ff;
-          letter-spacing: 0.05em;
-        }
-        .sd-estado-badge {
+        .sdt-badge-estado {
           display: inline-flex; align-items: center; gap: 5px;
-          padding: 4px 14px; border-radius: 50px;
-          font-size: 12px; font-weight: 500;
+          padding: 5px 14px; border-radius: 50px;
+          font-size: 12px; font-weight: 700;
+          letter-spacing: 0.04em;
         }
-        .sd-estado-badge.activo {
-          background: rgba(34,197,94,0.1);
-          border: 1px solid rgba(34,197,94,0.28); color: #4ade80;
+        .sdt-badge-activo {
+          background: rgba(22,163,74,0.1);
+          border: 1.5px solid rgba(22,163,74,0.3);
+          color: #16a34a;
         }
-        .sd-estado-badge.finalizado {
-          background: rgba(248,113,113,0.1);
-          border: 1px solid rgba(248,113,113,0.28); color: #f87171;
+        .sdt-badge-finalizado {
+          background: rgba(100,116,139,0.1);
+          border: 1.5px solid rgba(100,116,139,0.3);
+          color: #475569;
+        }
+        .sdt-badge-nivel {
+          display: inline-flex; padding: 5px 14px; border-radius: 50px;
+          font-family: 'Kameron', serif; font-size: 14px; font-weight: 700;
+          background: rgba(14,165,233,0.1);
+          border: 1.5px solid rgba(56,189,248,0.35);
+          color: #0284c7;
         }
 
-        .sd-numeros-wrap {
+        /* Números elegibles */
+        .sdt-chips-wrap {
           display: flex; flex-wrap: wrap; gap: 6px;
           max-height: 130px; overflow-y: auto;
           scrollbar-width: thin;
-          scrollbar-color: rgba(100,140,255,0.3) transparent;
+          scrollbar-color: rgba(56,189,248,0.3) transparent;
         }
-        .sd-numero-chip {
-          padding: 4px 11px; border-radius: 50px;
-          background: rgba(100,140,255,0.1);
-          border: 1px solid rgba(100,140,255,0.22);
-          color: #90b8ff;
+        .sdt-chip {
+          padding: 4px 12px; border-radius: 50px;
+          background: rgba(240,249,255,0.8);
+          border: 1.5px solid rgba(147,197,253,0.5);
+          color: #0284c7;
           font-family: 'Kameron', serif;
-          font-size: 12px; font-weight: 700; letter-spacing: 0.04em;
+          font-size: 12px; font-weight: 700;
+          letter-spacing: 0.04em;
+        }
+        .sdt-chips-empty {
+          font-size: 13px; color: #475569; padding: 8px 0;
         }
 
-        .sd-card-ruleta { grid-column: 1 / -1; }
-        .sd-ruleta-wrap {
+        /* Card ruleta (full width) */
+        .sdt-card-full { grid-column: 1 / -1; }
+        .sdt-ruleta-wrap {
           display: flex; flex-direction: column;
           align-items: center; padding: 8px 0 4px;
         }
 
-        .sd-ganador-card {
+        /* Card ganador */
+        .sdt-ganador-card {
           grid-column: 1 / -1;
-          background: rgba(255,255,255,0.06);
-          backdrop-filter: blur(20px);
-          border: 1px solid rgba(255,140,0,0.25);
-          border-radius: 20px; padding: 28px 20px;
-          text-align: center; position: relative; overflow: hidden;
-          box-shadow: 0 8px 40px rgba(255,140,0,0.1), 0 0 0 1px rgba(255,255,255,0.05);
-          animation: ganadorIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+          background: rgba(255,255,255,0.92);
+          backdrop-filter: blur(28px);
+          border: 1.5px solid rgba(193,127,10,0.3);
+          box-shadow: 0 16px 64px rgba(193,127,10,0.18), 0 4px 16px rgba(14,120,180,0.1), inset 0 1px 0 rgba(255,255,255,1);
+          border-radius: clamp(20px, 3.5vw, 32px);
+          padding: clamp(24px, 4vw, 40px) clamp(20px, 3vw, 32px);
+          text-align: center;
+          position: relative; overflow: hidden;
+          animation: sdtGanadorIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
-        @keyframes ganadorIn {
-          from { opacity: 0; transform: scale(0.88) translateY(12px); }
+        @keyframes sdtGanadorIn {
+          from { opacity: 0; transform: scale(0.88) translateY(14px); }
           to { opacity: 1; transform: scale(1) translateY(0); }
         }
-        .sd-ganador-card::before {
-          content: '';
-          position: absolute; top: 0; left: 0; right: 0; height: 2px;
-          background: linear-gradient(90deg, #ff8c00, #5b9bff, #ff8c00);
+        .sdt-ganador-bar {
+          position: absolute; top: 0; left: 0; right: 0; height: 4px;
+          background: linear-gradient(90deg, #c17f0a, #f59e0b, #38bdf8, #c17f0a);
+          background-size: 200% 100%;
+          animation: sdtShimmer 2s linear infinite;
         }
-        .sd-ganador-card::after {
-          content: '';
+        .sdt-ganador-glow {
           position: absolute; top: 50%; left: 50%;
           transform: translate(-50%, -50%);
-          width: 200px; height: 200px;
-          background: radial-gradient(ellipse, rgba(255,140,0,0.08) 0%, transparent 70%);
+          width: 240px; height: 240px;
+          background: radial-gradient(ellipse, rgba(193,127,10,0.06) 0%, transparent 70%);
           pointer-events: none;
         }
 
-        .sd-trophy-icon { color: #ff8c00; margin: 0 auto 10px; display: flex; align-items: center; justify-content: center; }
-        .sd-ganador-title {
-          font-family: 'Kameron', serif;
-          font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase;
-          color: rgba(160,190,255,0.45); margin-bottom: 10px;
+        .sdt-trophy { color: #c17f0a; margin: 0 auto 12px; display: flex; align-items: center; justify-content: center; }
+        .sdt-ganador-pretitle {
+          font-size: clamp(9px, 1vw, 11px);
+          font-weight: 700; letter-spacing: 0.2em;
+          text-transform: uppercase; color: #0369a1;
+          margin-bottom: 10px;
         }
-        .sd-ganador-numero {
+        .sdt-ganador-numero {
           font-family: 'Kameron', serif;
-          font-size: clamp(64px, 18vw, 90px);
+          font-size: clamp(64px, 18vw, 100px);
           font-weight: 700; line-height: 1;
-          color: #fff;
-          -webkit-text-stroke: 2px rgba(255,140,0,0.65);
-          letter-spacing: 0.06em;
-          animation: numBounce 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) 0.1s both;
+          color: #0c2340;
+          animation: sdtNumPop 0.7s cubic-bezier(0.34,1.56,0.64,1) 0.1s both;
           position: relative; z-index: 1;
         }
-        @keyframes numBounce {
-          from { transform: scale(0.4); opacity: 0; }
-          to { transform: scale(1); opacity: 1; }
+        @keyframes sdtNumPop {
+          from { transform: scale(0.4) rotate(-8deg); opacity: 0; }
+          60% { transform: scale(1.08) rotate(1deg); }
+          to { transform: scale(1) rotate(0deg); opacity: 1; }
         }
-        .sd-ganador-underline {
+        .sdt-ganador-line {
           width: 48px; height: 3px;
-          background: linear-gradient(90deg, #ff8c00, #5b9bff);
-          border-radius: 2px; margin: 12px auto 16px;
+          background: linear-gradient(90deg, #c17f0a, #38bdf8);
+          border-radius: 2px; margin: 14px auto 18px;
         }
-        .sd-ganador-nombre {
+        .sdt-ganador-nombre {
           font-family: 'Kameron', serif;
-          font-size: 20px; font-weight: 700; color: #e8f0ff; margin-bottom: 4px;
+          font-size: clamp(18px, 3vw, 24px); font-weight: 700;
+          color: #0c2340; margin-bottom: 4px;
         }
-        .sd-ganador-tel {
-          font-size: 14px; color: rgba(160,190,255,0.5);
-          font-family: 'DM Sans', sans-serif; margin-bottom: 22px;
+        .sdt-ganador-tel {
+          font-size: clamp(12px, 1.5vw, 14px);
+          color: #475569; margin-bottom: 24px;
         }
-        .sd-ganador-actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+        .sdt-ganador-actions {
+          display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;
+        }
 
-        .sd-btn-confirmar {
-          display: flex; align-items: center; gap: 7px;
-          padding: 12px 26px; border-radius: 50px; border: none;
-          background: linear-gradient(90deg, #16a34a, #22c55e);
-          color: #fff; font-family: 'Kameron', serif;
-          font-size: 14px; font-weight: 700; letter-spacing: 0.04em;
+        .sdt-btn-confirmar {
+          display: flex; align-items: center; gap: 8px;
+          padding: clamp(11px, 1.8vw, 14px) clamp(20px, 3vw, 28px);
+          border-radius: clamp(16px, 2.5vw, 22px); border: none;
+          background: linear-gradient(135deg, #16a34a 0%, #22c55e 100%);
+          color: #fff;
+          font-family: 'Kameron', serif; font-size: clamp(13px, 1.6vw, 15px); font-weight: 700;
           cursor: pointer; transition: all 0.2s;
-          box-shadow: 0 4px 16px rgba(34,197,94,0.22);
+          box-shadow: 0 6px 24px rgba(22,163,74,0.35);
+          min-height: 44px;
         }
-        .sd-btn-confirmar:hover { opacity: 0.9; transform: translateY(-1px); }
+        .sdt-btn-confirmar:hover { transform: translateY(-2px); box-shadow: 0 10px 32px rgba(22,163,74,0.45); }
 
-        .sd-btn-repetir {
-          display: flex; align-items: center; gap: 7px;
-          padding: 12px 26px; border-radius: 50px;
-          border: 1px solid rgba(255,140,0,0.35);
-          background: rgba(255,140,0,0.08);
-          color: #ffaa33; font-family: 'Kameron', serif;
-          font-size: 14px; font-weight: 700; letter-spacing: 0.04em;
+        .sdt-btn-repetir {
+          display: flex; align-items: center; gap: 8px;
+          padding: clamp(11px, 1.8vw, 14px) clamp(20px, 3vw, 28px);
+          border-radius: clamp(16px, 2.5vw, 22px);
+          border: 1.5px solid rgba(193,127,10,0.4);
+          background: rgba(254,243,199,0.5);
+          color: #c17f0a;
+          font-family: 'Kameron', serif; font-size: clamp(13px, 1.6vw, 15px); font-weight: 700;
           cursor: pointer; transition: all 0.2s;
+          min-height: 44px;
         }
-        .sd-btn-repetir:hover { background: rgba(255,140,0,0.16); }
+        .sdt-btn-repetir:hover { background: rgba(254,243,199,0.85); border-color: rgba(193,127,10,0.65); }
 
-        .sd-historial-card { grid-column: 1 / -1; }
-        .sd-table-wrap {
-          overflow-x: auto; border-radius: 12px;
-          border: 1px solid rgba(255,255,255,0.08);
+        /* Historial table */
+        .sdt-table-wrap {
+          overflow-x: auto;
+          border-radius: clamp(12px, 2vw, 18px);
+          border: 1.5px solid rgba(147,197,253,0.35);
         }
-        .sd-table {
+        .sdt-table {
           width: 100%; border-collapse: collapse;
-          font-size: 13px; font-family: 'DM Sans', sans-serif; min-width: 400px;
+          font-size: clamp(12px, 1.4vw, 14px);
+          font-family: 'DM Sans', sans-serif;
+          min-width: 380px;
         }
-        .sd-table thead { background: rgba(255,255,255,0.04); }
-        .sd-table th {
-          text-align: left; padding: 11px 14px;
-          font-family: 'Kameron', serif;
-          font-size: 11px; font-weight: 700;
-          letter-spacing: 0.1em; text-transform: uppercase;
-          color: rgba(160,190,255,0.45);
-          border-bottom: 1px solid rgba(255,255,255,0.07);
+        .sdt-table thead {
+          background: rgba(240,249,255,0.8);
         }
-        .sd-table td {
+        .sdt-table th {
+          text-align: left;
+          padding: 11px 14px;
+          font-size: clamp(9px, 1vw, 11px); font-weight: 700;
+          letter-spacing: 0.16em; text-transform: uppercase;
+          color: #0369a1;
+          border-bottom: 1.5px solid rgba(147,197,253,0.35);
+        }
+        .sdt-table td {
           padding: 12px 14px;
-          border-bottom: 1px solid rgba(255,255,255,0.05);
-          color: #c0d8ff; vertical-align: middle;
+          border-bottom: 1px solid rgba(147,197,253,0.2);
+          color: #0c2340;
+          vertical-align: middle;
         }
-        .sd-table tr:last-child td { border-bottom: none; }
-        .sd-table tr:hover td { background: rgba(255,255,255,0.03); }
+        .sdt-table tr:last-child td { border-bottom: none; }
+        .sdt-table tr:hover td { background: rgba(240,249,255,0.6); }
 
-        .sd-num-badge {
+        .sdt-num-badge {
           display: inline-flex; align-items: center; justify-content: center;
           width: 36px; height: 36px; border-radius: 50%;
-          background: linear-gradient(135deg, #1e6fff, #ff8c00);
+          background: linear-gradient(135deg, #38bdf8, #0284c7);
           font-family: 'Kameron', serif;
           font-size: 13px; font-weight: 700; color: #fff;
-          flex-shrink: 0; box-shadow: 0 2px 8px rgba(30,111,255,0.3);
+          flex-shrink: 0;
+          box-shadow: 0 2px 8px rgba(14,165,233,0.35);
         }
-
-        .sd-premio-tag {
+        .sdt-premio-tag {
           padding: 3px 10px; border-radius: 50px;
-          background: rgba(255,140,0,0.1);
-          border: 1px solid rgba(255,140,0,0.22);
-          color: #ffaa33; font-size: 12px;
+          background: rgba(193,127,10,0.1);
+          border: 1px solid rgba(193,127,10,0.3);
+          color: #c17f0a; font-size: 12px; font-weight: 600;
+        }
+        .sdt-table-empty {
+          text-align: center; padding: clamp(24px, 4vw, 40px);
+          color: #475569; font-size: 13px;
         }
 
-        .sd-empty {
-          text-align: center; padding: 28px 16px;
-          color: rgba(160,190,255,0.3);
-          font-size: 13px; font-family: 'DM Sans', sans-serif;
+        /* Footer */
+        .sdt-footer {
+          text-align: center;
+          margin-top: clamp(24px, 4vw, 40px);
+          padding-top: clamp(12px, 2vw, 18px);
+          border-top: 1px solid rgba(147,197,253,0.3);
+          font-size: clamp(10px, 1.2vw, 12px);
+          color: #475569; font-weight: 500;
         }
       `}</style>
 
-      <div className="sd-root">
-        <div className="sd-inner">
+      <div className="sdt-page">
+        {/* Burbujas */}
+        <div className="sdt-bubble sdt-bubble-1" />
+        <div className="sdt-bubble sdt-bubble-2" />
+        <div className="sdt-bubble sdt-bubble-3" />
+        <div className="sdt-bubble sdt-bubble-4" />
 
-          <div className="sd-topbar">
-            <div className="sd-topbar-left">
-              <button onClick={() => navigate('/dashboard')} className="sd-btn-back">
+        <div className="sdt-inner">
+
+          {/* Topbar */}
+          <div className="sdt-topbar">
+            <div className="sdt-topbar-left">
+              <button onClick={() => navigate('/dashboard')} className="sdt-btn-back">
                 <ArrowLeft size={14} /> Dashboard
               </button>
-              <h1 className="sd-title">Ruleta · <span>{sorteo.nombre}</span></h1>
+              <h1 className="sdt-page-title">
+                Sorteo · <span>{sorteo.nombre}</span>
+              </h1>
             </div>
             {!finalizado && (
-              <button onClick={finalizarSorteo} className="sd-btn-finalizar">
+              <button onClick={finalizarSorteo} className="sdt-btn-finalizar">
                 <XCircle size={14} /> Finalizar sorteo
               </button>
             )}
           </div>
 
-          <div className="sd-grid">
+          <div className="sdt-divider" />
 
-            <div className="sd-card">
-              <div className="sd-card-body">
-                <div className="sd-card-title">📊 Estado del sorteo</div>
-                <div className="sd-stats-grid">
-                  <div className="sd-stat">
-                    <div className="sd-stat-label">Estado</div>
-                    <span className={`sd-estado-badge ${finalizado ? 'finalizado' : 'activo'}`}>
+          {/* Grid */}
+          <div className="sdt-grid">
+
+            {/* Card estado */}
+            <div className="sdt-card">
+              <div className="sdt-card-bar" />
+              <div className="sdt-card-body">
+                <div className="sdt-card-label">📊 Estado del sorteo</div>
+                <div className="sdt-stats-grid">
+                  <div className="sdt-stat-item">
+                    <div className="sdt-stat-lbl">Estado</div>
+                    <span className={`sdt-badge-estado ${finalizado ? 'sdt-badge-finalizado' : 'sdt-badge-activo'}`}>
                       {finalizado ? '● Finalizado' : '● Activo'}
                     </span>
                   </div>
-                  <div className="sd-stat">
-                    <div className="sd-stat-label">Nivel</div>
-                    <span className="sd-nivel-badge">{sorteo.nivel_filtro}</span>
+                  <div className="sdt-stat-item">
+                    <div className="sdt-stat-lbl">Nivel</div>
+                    <span className="sdt-badge-nivel">{sorteo.nivel_filtro}</span>
                   </div>
-                  <div className="sd-stat">
-                    <div className="sd-stat-label">Elegibles</div>
-                    <div className="sd-stat-value blue">{numerosElegibles.length}</div>
+                  <div className="sdt-stat-item">
+                    <div className="sdt-stat-lbl">Elegibles</div>
+                    <div className="sdt-stat-val blue">{numerosElegibles.length}</div>
                   </div>
-                  <div className="sd-stat">
-                    <div className="sd-stat-label">Ganadores</div>
-                    <div className="sd-stat-value orange">{sorteo.ganadores?.length || 0}</div>
+                  <div className="sdt-stat-item">
+                    <div className="sdt-stat-lbl">Ganadores</div>
+                    <div className="sdt-stat-val gold">{sorteo.ganadores?.length || 0}</div>
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="sd-card">
-              <div className="sd-card-body">
-                <div className="sd-card-title">🎫 Números elegibles</div>
-                <div className="sd-numeros-wrap">
+            {/* Card números elegibles */}
+            <div className="sdt-card">
+              <div className="sdt-card-bar" />
+              <div className="sdt-card-body">
+                <div className="sdt-card-label">🎫 Números elegibles</div>
+                <div className="sdt-chips-wrap">
                   {numerosElegibles.length === 0
-                    ? <p className="sd-empty">Sin números elegibles</p>
+                    ? <p className="sdt-chips-empty">Sin números elegibles</p>
                     : numerosElegibles.map(n => (
-                        <span key={n.numero} className="sd-numero-chip">{n.numero}</span>
+                        <span key={n.numero} className="sdt-chip">{n.numero}</span>
                       ))
                   }
                 </div>
               </div>
             </div>
 
-            <div className="sd-card sd-card-ruleta">
-              <div className="sd-card-body">
-                <div className="sd-card-title" style={{ justifyContent: 'center' }}>🎡 Ruleta de sorteo</div>
-                <div className="sd-ruleta-wrap">
+            {/* Card ruleta */}
+            <div className="sdt-card sdt-card-full">
+              <div className="sdt-card-bar gold" />
+              <div className="sdt-card-body">
+                <div className="sdt-card-label" style={{ justifyContent: 'center' }}>🎡 Ruleta de sorteo</div>
+                <div className="sdt-ruleta-wrap">
                   <Roulette
                     onSpin={girarRuleta}
                     isSpinning={girando}
@@ -525,36 +634,41 @@ export default function SorteoDetalle() {
               </div>
             </div>
 
+            {/* Ganador card */}
             {ultimoGanador && !girando && (
-              <div className="sd-ganador-card">
-                <div className="sd-trophy-icon"><Trophy size={34} /></div>
-                <div className="sd-ganador-title">¡Tenemos ganador!</div>
-                <div className="sd-ganador-numero">{ultimoGanador.numero}</div>
-                <div className="sd-ganador-underline" />
-                <div className="sd-ganador-nombre">{ultimoGanador.nombre}</div>
-                <div className="sd-ganador-tel">{ultimoGanador.telefono}</div>
-                <div className="sd-ganador-actions">
-                  <button onClick={confirmarGanador} className="sd-btn-confirmar">
+              <div className="sdt-ganador-card">
+                <div className="sdt-ganador-bar" />
+                <div className="sdt-ganador-glow" />
+                <div className="sdt-trophy"><Trophy size={36} /></div>
+                <div className="sdt-ganador-pretitle">¡Tenemos un ganador!</div>
+                <div className="sdt-ganador-numero">{ultimoGanador.numero}</div>
+                <div className="sdt-ganador-line" />
+                <div className="sdt-ganador-nombre">{ultimoGanador.nombre}</div>
+                <div className="sdt-ganador-tel">{ultimoGanador.telefono}</div>
+                <div className="sdt-ganador-actions">
+                  <button onClick={confirmarGanador} className="sdt-btn-confirmar">
                     <CheckCircle size={16} /> Confirmar ganador
                   </button>
-                  <button onClick={repetir} className="sd-btn-repetir">
+                  <button onClick={repetir} className="sdt-btn-repetir">
                     <RotateCcw size={16} /> Repetir (excluir)
                   </button>
                 </div>
               </div>
             )}
 
-            <div className="sd-card sd-historial-card">
-              <div className="sd-card-body">
-                <div className="sd-card-title">
-                  <Trophy size={15} style={{ color: '#ff8c00' }} />
+            {/* Historial de ganadores */}
+            <div className="sdt-card sdt-card-full" style={{ animationDelay: '0.22s' }}>
+              <div className="sdt-card-bar green" />
+              <div className="sdt-card-body">
+                <div className="sdt-card-label">
+                  <Trophy size={14} style={{ color: '#c17f0a' }} />
                   Historial de ganadores
                 </div>
                 {(!sorteo.ganadores || sorteo.ganadores.length === 0) ? (
-                  <div className="sd-empty">Aún no hay ganadores en este sorteo.</div>
+                  <div className="sdt-table-empty">Aún no hay ganadores en este sorteo.</div>
                 ) : (
-                  <div className="sd-table-wrap">
-                    <table className="sd-table">
+                  <div className="sdt-table-wrap">
+                    <table className="sdt-table">
                       <thead>
                         <tr>
                           <th>N°</th>
@@ -566,10 +680,10 @@ export default function SorteoDetalle() {
                       <tbody>
                         {sorteo.ganadores.map(g => (
                           <tr key={g.id}>
-                            <td><span className="sd-num-badge">{g.numero_ganador}</span></td>
-                            <td style={{ fontWeight: 500 }}>{g.participante?.nombre_completo || 'N/A'}</td>
-                            <td style={{ color: 'rgba(160,190,255,0.5)' }}>{g.participante?.telefon || 'N/A'}</td>
-                            <td><span className="sd-premio-tag">{g.premio_descripcion || g.premio?.descripcion || 'Sin especificar'}</span></td>
+                            <td><span className="sdt-num-badge">{g.numero_ganador}</span></td>
+                            <td style={{ fontWeight: 600 }}>{g.participante?.nombre_completo || 'N/A'}</td>
+                            <td style={{ color: '#475569' }}>{g.participante?.telefon || 'N/A'}</td>
+                            <td><span className="sdt-premio-tag">{g.premio_descripcion || g.premio?.descripcion || 'Sin especificar'}</span></td>
                           </tr>
                         ))}
                       </tbody>
@@ -579,6 +693,10 @@ export default function SorteoDetalle() {
               </div>
             </div>
 
+          </div>
+
+          <div className="sdt-footer">
+            Zeno Marketing Platform · Sorteos en tiempo real
           </div>
         </div>
       </div>
