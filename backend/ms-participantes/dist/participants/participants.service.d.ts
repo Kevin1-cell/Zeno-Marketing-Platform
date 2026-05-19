@@ -21,6 +21,7 @@ export declare class ParticipantsService {
         soloInvitadosNoUnidos?: boolean;
     }): Promise<{
         id: string;
+        created_at: Date;
         evento_id: string;
         nombre_completo: string;
         telefon: string;
@@ -30,10 +31,10 @@ export declare class ParticipantsService {
         tipo: import("@prisma/client").$Enums.TipoParticipante;
         se_unio: boolean | null;
         recompensa: string | null;
-        created_at: Date;
     }[]>;
     consultarPorTelefono(telefon: string, evento_id: string): Promise<{
         id: string;
+        created_at: Date;
         evento_id: string;
         nombre_completo: string;
         telefon: string;
@@ -43,10 +44,10 @@ export declare class ParticipantsService {
         tipo: import("@prisma/client").$Enums.TipoParticipante;
         se_unio: boolean | null;
         recompensa: string | null;
-        created_at: Date;
     } | null>;
     obtenerPorId(id: string): Promise<{
         id: string;
+        created_at: Date;
         evento_id: string;
         nombre_completo: string;
         telefon: string;
@@ -56,6 +57,5 @@ export declare class ParticipantsService {
         tipo: import("@prisma/client").$Enums.TipoParticipante;
         se_unio: boolean | null;
         recompensa: string | null;
-        created_at: Date;
     }>;
 }

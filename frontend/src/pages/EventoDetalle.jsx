@@ -16,7 +16,7 @@ export default function EventoDetalle() {
   const { token } = useAuthStore()
   const [evento, setEvento] = useState(null)
   const [participantes, setParticipantes] = useState([])
-  const [stats, setStats] = useState({ total: 0, confirmados: 0, porNivel: { C1: 0, C2: 0, C3: 0 } })
+  const [stats, setStats] = useState({ total: 0, confirmados: 0, porNivel: { C1: 0, C2: 0, C3: 0, B1: 0 } })
   const [sorteos, setSorteos] = useState([])
   const [generandoReporte, setGenerandoReporte] = useState(false)
 
@@ -35,7 +35,6 @@ export default function EventoDetalle() {
       setSorteos(Array.isArray(sorteosRes.data) ? sorteosRes.data : [])
     } catch (err) {
       toast.error('Error al cargar datos del evento')
-      console.error(err)
     }
   }
 
@@ -43,7 +42,11 @@ export default function EventoDetalle() {
     if (!eventoId || !token) return
     fetchData()
 
-    const socket = io(WS_PARTICIPANTES, { transports: ['websocket'] })
+    const socket = io('/participants', {
+      path: '/socket.io',
+      transports: ['websocket']
+    })
+    
     socket.on('participante:nuevo', (nuevoParticipante) => {
       if (nuevoParticipante.evento_id === eventoId) {
         setParticipantes(prev => [...prev, nuevoParticipante])
@@ -74,6 +77,7 @@ export default function EventoDetalle() {
     fetchData()
   }
 
+  // Cálculo de estadísticas locales (incluye B1)
   const totalEmpleados = participantes.filter(p => p.tipo === 'EMPLEADO' && p.confirmado).length
   const totalInvitados = participantes.filter(p => p.tipo === 'INVITADO').length
   const invitadosUnidos = participantes.filter(p => p.tipo === 'INVITADO' && p.se_unio === true).length
@@ -82,6 +86,7 @@ export default function EventoDetalle() {
     C1: participantes.filter(p => p.confirmado && p.nivel === 'C1').length,
     C2: participantes.filter(p => p.confirmado && p.nivel === 'C2').length,
     C3: participantes.filter(p => p.confirmado && p.nivel === 'C3').length,
+    B1: participantes.filter(p => p.confirmado && p.nivel === 'B1').length,
   }
   const totalConfirmados = participantes.filter(p => p.confirmado).length
 
@@ -110,8 +115,8 @@ export default function EventoDetalle() {
       doc.text(`• Total de registrados (empleados + invitados): ${stats.total}`, margin, y); y += 6
       doc.text(`  Empleados: ${totalEmpleados} | Invitados: ${totalInvitados}`, margin, y); y += 6
       doc.text(`  Invitados que se unieron: ${invitadosUnidos}`, margin, y); y += 6
-      doc.text(`• Total de confirmados (empleados): ${totalConfirmados}`, margin, y); y += 6
-      doc.text(`  Desglose por nivel: C1: ${confirmadosPorNivel.C1} | C2: ${confirmadosPorNivel.C2} | C3: ${confirmadosPorNivel.C3}`, margin, y); y += 12
+      doc.text(`• Total de confirmados (empleados + invitados convertidos): ${totalConfirmados}`, margin, y); y += 6
+      doc.text(`  Desglose por nivel: C1: ${confirmadosPorNivel.C1} | C2: ${confirmadosPorNivel.C2} | C3: ${confirmadosPorNivel.C3} | B1: ${confirmadosPorNivel.B1}`, margin, y); y += 12
 
       if (participantesConfirmados.length > 0) {
         doc.setFontSize(14); doc.setTextColor(...colorZenoBlue)
@@ -180,7 +185,6 @@ export default function EventoDetalle() {
       doc.save(`reporte_${evento.nombre.replace(/\s+/g, '_')}.pdf`)
       toast.success('Reporte generado exitosamente')
     } catch (error) {
-      console.error('Error generando reporte:', error)
       toast.error('Error al generar el reporte')
     } finally {
       setGenerandoReporte(false)
@@ -400,8 +404,17 @@ export default function EventoDetalle() {
           flex-wrap: wrap;
         }
 
+        /* Iconos SVG inline */
+        .ed-icon {
+          display: inline-block;
+          width: 15px;
+          height: 15px;
+          vertical-align: middle;
+          flex-shrink: 0;
+        }
+
         .ed-btn-primary {
-          display: flex; align-items: center; gap: 7px;
+          display: flex; align-items: center; gap: 8px;
           padding: clamp(10px, 1.5vw, 13px) clamp(16px, 2.5vw, 22px);
           border-radius: clamp(16px, 2.5vw, 22px);
           background: linear-gradient(135deg, #38bdf8 0%, #0ea5e9 50%, #0284c7 100%);
@@ -421,7 +434,7 @@ export default function EventoDetalle() {
         }
 
         .ed-btn-success {
-          display: flex; align-items: center; gap: 7px;
+          display: flex; align-items: center; gap: 8px;
           padding: clamp(10px, 1.5vw, 13px) clamp(16px, 2.5vw, 22px);
           border-radius: clamp(16px, 2.5vw, 22px);
           background: linear-gradient(135deg, #16a34a 0%, #22c55e 100%);
@@ -462,10 +475,24 @@ export default function EventoDetalle() {
           border-bottom: 1px solid rgba(147,197,253,0.25);
         }
         .ed-card-title {
+          display: flex;
+          align-items: center;
+          gap: 10px;
           font-family: 'Kameron', serif;
           font-size: clamp(15px, 2.5vw, 20px);
           font-weight: 700;
           color: #0c2340;
+        }
+        .ed-card-title-icon {
+          width: 32px;
+          height: 32px;
+          border-radius: 9px;
+          background: linear-gradient(135deg, rgba(56,189,248,0.18), rgba(14,165,233,0.08));
+          border: 1.5px solid rgba(56,189,248,0.25);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex-shrink: 0;
         }
 
         .ed-card-body {
@@ -506,28 +533,47 @@ export default function EventoDetalle() {
         .ed-badge {
           display: inline-flex;
           align-items: center;
-          gap: 4px;
-          padding: 4px 12px;
+          gap: 5px;
+          padding: 5px 12px;
           border-radius: 50px;
           font-size: 11px; font-weight: 700;
           letter-spacing: 0.06em;
+        }
+        .ed-badge-dot {
+          width: 6px;
+          height: 6px;
+          border-radius: 50%;
+          flex-shrink: 0;
         }
         .ed-badge-activo {
           background: rgba(22,163,74,0.1);
           border: 1px solid rgba(22,163,74,0.3);
           color: #16a34a;
         }
+        .ed-badge-activo .ed-badge-dot { background: #16a34a; }
         .ed-badge-finalizado {
           background: rgba(100,116,139,0.1);
           border: 1px solid rgba(100,116,139,0.3);
           color: #475569;
         }
+        .ed-badge-finalizado .ed-badge-dot { background: #64748b; }
 
         .ed-empty {
           text-align: center;
           padding: clamp(24px, 4vw, 40px);
           color: #475569;
           font-size: clamp(13px, 1.5vw, 15px);
+        }
+        .ed-empty-icon {
+          width: 48px;
+          height: 48px;
+          margin: 0 auto 14px;
+          border-radius: 14px;
+          background: linear-gradient(135deg, rgba(56,189,248,0.12), rgba(14,165,233,0.05));
+          border: 1.5px solid rgba(56,189,248,0.2);
+          display: flex;
+          align-items: center;
+          justify-content: center;
         }
 
         /* Footer */
@@ -543,7 +589,6 @@ export default function EventoDetalle() {
       `}</style>
 
       <div className="ed-page">
-        {/* Burbujas */}
         <div className="ed-bubble ed-bubble-1" />
         <div className="ed-bubble ed-bubble-2" />
         <div className="ed-bubble ed-bubble-3" />
@@ -557,7 +602,10 @@ export default function EventoDetalle() {
               <h1 className="ed-title">{evento.nombre}</h1>
             </div>
             <button onClick={() => navigate('/dashboard')} className="ed-btn-back">
-              ← Volver al Dashboard
+              <svg className="ed-icon" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M10 12L6 8L10 4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+              Volver al Dashboard
             </button>
           </div>
 
@@ -575,7 +623,7 @@ export default function EventoDetalle() {
               <div className="ed-stat-bar green" />
               <div className="ed-stat-label">Confirmados</div>
               <div className="ed-stat-number green">{totalConfirmados}</div>
-              <div className="ed-stat-sub">C1: {confirmadosPorNivel.C1} · C2: {confirmadosPorNivel.C2} · C3: {confirmadosPorNivel.C3}</div>
+              <div className="ed-stat-sub">C1: {confirmadosPorNivel.C1} · C2: {confirmadosPorNivel.C2} · C3: {confirmadosPorNivel.C3} · B1: {confirmadosPorNivel.B1}</div>
             </div>
             <div className="ed-stat-card">
               <div className="ed-stat-bar orange" />
@@ -588,10 +636,17 @@ export default function EventoDetalle() {
           {/* Acciones */}
           <div className="ed-actions">
             <button onClick={() => navigate(`/participantes/${evento.id}`)} className="ed-btn-primary">
-              📋 Gestionar participantes
+              <svg className="ed-icon" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M2 4h12M2 8h12M2 12h7" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/>
+              </svg>
+              Gestionar participantes
             </button>
             <button onClick={generarReportePDF} disabled={generandoReporte} className="ed-btn-success">
-              {generandoReporte ? '⏳ Generando...' : '📄 Generar reporte'}
+              <svg className="ed-icon" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M4 2h6l3 3v9H4V2z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M9 2v4h3M8 8v4M6 10l2 2 2-2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+              {generandoReporte ? 'Generando...' : 'Generar reporte'}
             </button>
           </div>
 
@@ -605,7 +660,15 @@ export default function EventoDetalle() {
           {/* Sorteos del evento */}
           <div className="ed-card" style={{ animationDelay: '0.22s' }}>
             <div className="ed-card-header">
-              <span className="ed-card-title">🎡 Sorteos del evento</span>
+              <div className="ed-card-title">
+                <div className="ed-card-title-icon">
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="8" cy="8" r="6" stroke="#0ea5e9" strokeWidth="1.5"/>
+                    <path d="M5 8l2 2 4-4" stroke="#0ea5e9" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </div>
+                Sorteos del evento
+              </div>
               <span style={{ fontSize: 12, color: '#475569', fontWeight: 600 }}>
                 {sorteos.length} sorteo{sorteos.length !== 1 ? 's' : ''}
               </span>
@@ -613,6 +676,12 @@ export default function EventoDetalle() {
             <div className="ed-card-body">
               {sorteos.length === 0 ? (
                 <div className="ed-empty">
+                  <div className="ed-empty-icon">
+                    <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <rect x="3" y="3" width="16" height="16" rx="4" stroke="#38bdf8" strokeWidth="1.5"/>
+                      <path d="M11 7v4M11 13v1" stroke="#38bdf8" strokeWidth="1.5" strokeLinecap="round"/>
+                    </svg>
+                  </div>
                   No hay sorteos creados aún.<br />
                   <span style={{ color: '#0369a1', fontWeight: 700 }}>Usa el formulario de arriba para crear uno.</span>
                 </div>
@@ -626,14 +695,18 @@ export default function EventoDetalle() {
                       </div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
                         <span className={`ed-badge ${s.estado === 'FINALIZADO' ? 'ed-badge-finalizado' : 'ed-badge-activo'}`}>
-                          {s.estado === 'FINALIZADO' ? '● Finalizado' : '● Activo'}
+                          <span className="ed-badge-dot" />
+                          {s.estado === 'FINALIZADO' ? 'Finalizado' : 'Activo'}
                         </span>
                         <button
                           onClick={() => navigate(`/sorteos/${s.id}`)}
                           className="ed-btn-primary"
                           style={{ padding: '8px 18px', fontSize: 12, minHeight: 36 }}
                         >
-                          Administrar →
+                          Administrar
+                          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ marginLeft: 2 }}>
+                            <path d="M4 2l4 4-4 4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+                          </svg>
                         </button>
                       </div>
                     </div>

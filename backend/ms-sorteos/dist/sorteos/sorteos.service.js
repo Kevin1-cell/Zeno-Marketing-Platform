@@ -61,7 +61,12 @@ let SorteosService = class SorteosService {
             confirmado: true,
         };
         if (sorteo.nivel_filtro !== 'TODOS') {
-            where.nivel = sorteo.nivel_filtro;
+            if (sorteo.nivel_filtro === 'C3') {
+                where.nivel = { in: ['C3', 'B1'] };
+            }
+            else {
+                where.nivel = sorteo.nivel_filtro;
+            }
         }
         const participantes = await this.prisma.participante.findMany({
             where,

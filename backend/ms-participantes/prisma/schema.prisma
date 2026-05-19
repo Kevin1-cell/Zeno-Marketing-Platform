@@ -1,5 +1,6 @@
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl", "linux-musl-openssl-3.0.x"]
 }
 
 datasource db {
@@ -26,7 +27,7 @@ model Evento {
   fecha         DateTime
   estado        EstadoEvento @default(ACTIVO)
   whatsapp_link String?
-  aforo_maximo  Int?          // 👈 nuevo campo: límite máximo de participantes (null = sin límite)
+  aforo_maximo  Int?
   eliminado     Boolean      @default(false)
   created_at    DateTime     @default(now())
 
@@ -128,6 +129,7 @@ enum Nivel {
   C1
   C2
   C3
+  B1   // 👈 nuevo nivel
 }
 
 enum NivelFilter {

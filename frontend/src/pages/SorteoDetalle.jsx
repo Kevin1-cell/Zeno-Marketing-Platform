@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import toast from 'react-hot-toast'
-import { Trophy, RotateCcw, CheckCircle, XCircle, ArrowLeft } from 'lucide-react'
+import { Trophy, RotateCcw, CheckCircle, XCircle, ArrowLeft, Gift } from 'lucide-react'
 import Roulette from '../components/Roulette'
 
 export default function SorteoDetalle() {
@@ -15,13 +15,14 @@ export default function SorteoDetalle() {
   const [numerosElegibles, setNumerosElegibles] = useState([])
   const [numeroParaRuleta, setNumeroParaRuleta] = useState(null)
 
+  const [showModalPremio, setShowModalPremio] = useState(false)
+  const [premioTexto, setPremioTexto] = useState('Ingresa el premio para el ganador')
+
   const cargarSorteo = async () => {
     try {
       const res = await axios.get(`/sorteos/${id}`, { headers: { Authorization: `Bearer ${token}` } })
       setSorteo(res.data)
-    } catch (err) {
-      console.error('Error cargando sorteo:', err)
-    }
+    } catch (err) {}
   }
 
   useEffect(() => {
@@ -36,9 +37,7 @@ export default function SorteoDetalle() {
         headers: { Authorization: `Bearer ${token}` }
       })
       setNumerosElegibles(Array.isArray(res.data) ? res.data : [])
-    } catch (err) {
-      console.error('Error cargando números elegibles:', err)
-    }
+    } catch (err) {}
   }
 
   const girarRuleta = async () => {
@@ -69,18 +68,23 @@ export default function SorteoDetalle() {
     }
   }
 
-  const confirmarGanador = async () => {
-    if (!ultimoGanador) return
+  const abrirModalConfirmar = () => {
+    setPremioTexto('')
+    setShowModalPremio(true)
+  }
+
+  const confirmarGanadorFinal = async () => {
+    if (!ultimoGanador || !premioTexto) return
     try {
-      const premio = prompt('Escribe el premio para el ganador:', 'Premio manual')
-      if (!premio) return
       await axios.post(`/sorteos/confirmar-ganador`, {
         sorteo_id: id,
         numero_ganador: ultimoGanador.numero,
         participante_id: ultimoGanador.participante_id,
-        premio_descripcion: premio
+        premio_descripcion: premioTexto
       }, { headers: { Authorization: `Bearer ${token}` } })
+      
       toast.success('🏆 Ganador confirmado')
+      setShowModalPremio(false)
       setUltimoGanador(null)
       await Promise.all([cargarSorteo(), cargarNumerosElegibles()])
     } catch (err) {
@@ -478,6 +482,73 @@ export default function SorteoDetalle() {
         }
         .sdt-btn-repetir:hover { background: rgba(254,243,199,0.85); border-color: rgba(193,127,10,0.65); }
 
+        .zeno-modal-overlay {
+          position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+          background: rgba(12, 35, 64, 0.4);
+          backdrop-filter: blur(12px);
+          z-index: 1000;
+          display: flex; align-items: center; justify-content: center;
+          padding: 20px;
+          animation: modalFadeIn 0.3s ease-out;
+        }
+        @keyframes modalFadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .zeno-modal {
+          background: white;
+          width: 100%; max-width: 420px;
+          border-radius: 28px;
+          box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+          overflow: hidden;
+          position: relative;
+          animation: modalScaleUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        @keyframes modalScaleUp { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+        .zeno-modal-header {
+          padding: 24px 24px 16px;
+          text-align: center;
+        }
+        .zeno-modal-icon {
+          width: 56px; height: 56px; border-radius: 18px;
+          background: rgba(14, 165, 233, 0.1);
+          color: #0284c7;
+          display: flex; align-items: center; justify-content: center;
+          margin: 0 auto 16px;
+        }
+        .zeno-modal-title {
+          font-family: 'Kameron', serif;
+          font-size: 22px; font-weight: 700; color: #0c2340;
+        }
+
+        .zeno-modal-body { padding: 0 24px 24px; }
+        .zeno-modal-input-label {
+          display: block; font-size: 11px; font-weight: 700;
+          text-transform: uppercase; letter-spacing: 0.1em;
+          color: #64748b; margin-bottom: 8px; padding-left: 4px;
+        }
+        .zeno-modal-input {
+          width: 100%; padding: 14px 18px;
+          border-radius: 16px; border: 2px solid #e2e8f0;
+          font-family: 'DM Sans', sans-serif; font-size: 15px;
+          transition: all 0.2s; outline: none;
+          background: #f8fafc;
+        }
+        .zeno-modal-input:focus {
+          border-color: #38bdf8; background: white;
+          box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.15);
+        }
+
+        .zeno-modal-footer {
+          padding: 16px 24px 24px;
+          display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+        }
+        .zeno-btn-cancel {
+          padding: 12px; border-radius: 14px; border: 1.5px solid #e2e8f0;
+          background: white; color: #64748b; font-weight: 600;
+          cursor: pointer; transition: all 0.2s;
+        }
+        .zeno-btn-cancel:hover { background: #f1f5f9; color: #0f172a; }
+
         /* Historial table */
         .sdt-table-wrap {
           overflow-x: auto;
@@ -541,8 +612,41 @@ export default function SorteoDetalle() {
         }
       `}</style>
 
+      {showModalPremio && (
+        <div className="zeno-modal-overlay">
+          <div className="zeno-modal">
+            <div className="sdt-card-bar gold" />
+            <div className="zeno-modal-header">
+              <div className="zeno-modal-icon">
+                <Gift size={28} />
+              </div>
+              <h3 className="zeno-modal-title">Asignar Premio</h3>
+            </div>
+            <div className="zeno-modal-body">
+              <label className="zeno-modal-input-label">Descripción del premio</label>
+              <input 
+                autoFocus
+                type="text" 
+                className="zeno-modal-input"
+                placeholder="Ej: Televisor 50', Bono $100..."
+                value={premioTexto}
+                onChange={(e) => setPremioTexto(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && confirmarGanadorFinal()}
+              />
+            </div>
+            <div className="zeno-modal-footer">
+              <button className="zeno-btn-cancel" onClick={() => setShowModalPremio(false)}>
+                Cancelar
+              </button>
+              <button className="sdt-btn-confirmar" style={{ boxShadow: 'none' }} onClick={confirmarGanadorFinal}>
+                Confirmar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="sdt-page">
-        {/* Burbujas */}
         <div className="sdt-bubble sdt-bubble-1" />
         <div className="sdt-bubble sdt-bubble-2" />
         <div className="sdt-bubble sdt-bubble-3" />
@@ -550,10 +654,9 @@ export default function SorteoDetalle() {
 
         <div className="sdt-inner">
 
-          {/* Topbar */}
           <div className="sdt-topbar">
             <div className="sdt-topbar-left">
-              <button onClick={() => navigate('/dashboard')} className="sdt-btn-back">
+              <button onClick={() => navigate(-1)} className="sdt-btn-back">
                 <ArrowLeft size={14} /> Dashboard
               </button>
               <h1 className="sdt-page-title">
@@ -569,10 +672,8 @@ export default function SorteoDetalle() {
 
           <div className="sdt-divider" />
 
-          {/* Grid */}
           <div className="sdt-grid">
 
-            {/* Card estado */}
             <div className="sdt-card">
               <div className="sdt-card-bar" />
               <div className="sdt-card-body">
@@ -600,7 +701,6 @@ export default function SorteoDetalle() {
               </div>
             </div>
 
-            {/* Card números elegibles */}
             <div className="sdt-card">
               <div className="sdt-card-bar" />
               <div className="sdt-card-body">
@@ -616,7 +716,6 @@ export default function SorteoDetalle() {
               </div>
             </div>
 
-            {/* Card ruleta */}
             <div className="sdt-card sdt-card-full">
               <div className="sdt-card-bar gold" />
               <div className="sdt-card-body">
@@ -634,7 +733,6 @@ export default function SorteoDetalle() {
               </div>
             </div>
 
-            {/* Ganador card */}
             {ultimoGanador && !girando && (
               <div className="sdt-ganador-card">
                 <div className="sdt-ganador-bar" />
@@ -646,7 +744,7 @@ export default function SorteoDetalle() {
                 <div className="sdt-ganador-nombre">{ultimoGanador.nombre}</div>
                 <div className="sdt-ganador-tel">{ultimoGanador.telefono}</div>
                 <div className="sdt-ganador-actions">
-                  <button onClick={confirmarGanador} className="sdt-btn-confirmar">
+                  <button onClick={abrirModalConfirmar} className="sdt-btn-confirmar">
                     <CheckCircle size={16} /> Confirmar ganador
                   </button>
                   <button onClick={repetir} className="sdt-btn-repetir">
@@ -656,7 +754,6 @@ export default function SorteoDetalle() {
               </div>
             )}
 
-            {/* Historial de ganadores */}
             <div className="sdt-card sdt-card-full" style={{ animationDelay: '0.22s' }}>
               <div className="sdt-card-bar green" />
               <div className="sdt-card-body">
@@ -682,7 +779,7 @@ export default function SorteoDetalle() {
                           <tr key={g.id}>
                             <td><span className="sdt-num-badge">{g.numero_ganador}</span></td>
                             <td style={{ fontWeight: 600 }}>{g.participante?.nombre_completo || 'N/A'}</td>
-                            <td style={{ color: '#475569' }}>{g.participante?.telefon || 'N/A'}</td>
+                            <td style={{ color: '#475569' }}>{g.participante?.telefono || 'N/A'}</td>
                             <td><span className="sdt-premio-tag">{g.premio_descripcion || g.premio?.descripcion || 'Sin especificar'}</span></td>
                           </tr>
                         ))}

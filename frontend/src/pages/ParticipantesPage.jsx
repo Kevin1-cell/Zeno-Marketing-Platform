@@ -32,19 +32,19 @@ export default function ParticipantesPage() {
     if (!eventoId || !token) return
     fetchData()
 
-    console.log('🔌 Conectando WebSocket en página de participantes')
-    const socket = io(WS_PARTICIPANTES, { transports: ['websocket'] })
+    const socket = io('/participants', {
+      path: '/socket.io',
+      transports: ['websocket']
+    })
 
-    socket.on('connect', () => console.log('✅ WebSocket conectado (participantes page)'))
+    socket.on('connect', () => {})
     socket.on('participante:nuevo', (nuevoParticipante) => {
-      console.log('🆕 participante:nuevo recibido:', nuevoParticipante)
       if (nuevoParticipante.evento_id === eventoId) {
         setParticipantes(prev => [...prev, nuevoParticipante])
         toast.success(`Nuevo participante: ${nuevoParticipante.nombre_completo}`)
       }
     })
     socket.on('participante:confirmado', (participanteConfirmado) => {
-      console.log('✅ participante:confirmado recibido:', participanteConfirmado)
       if (participanteConfirmado.evento_id === eventoId) {
         setParticipantes(prev =>
           prev.map(p => p.id === participanteConfirmado.id ? { ...p, confirmado: true } : p)
@@ -52,10 +52,9 @@ export default function ParticipantesPage() {
         toast.success(`Participante confirmado: ${participanteConfirmado.nombre_completo}`)
       }
     })
-    socket.on('disconnect', () => console.log('❌ WebSocket desconectado (participantes page)'))
+    socket.on('disconnect', () => {})
 
     return () => {
-      console.log('🔌 Desconectando WebSocket (participantes page)')
       socket.disconnect()
     }
   }, [eventoId, token])
@@ -135,12 +134,18 @@ export default function ParticipantesPage() {
           padding: 0 0 clamp(32px, 5vw, 56px);
         }
 
+        @media (min-width: 900px) {
+          .zpp-inner {
+            max-width: min(1200px, 96vw);
+          }
+        }
+
         /* ── STICKY HEADER ── */
         .zpp-header {
           display: flex;
           align-items: center;
           gap: clamp(10px, 2vw, 14px);
-          padding: clamp(12px, 2vw, 16px) clamp(14px, 2.5vw, 20px);
+          padding: clamp(12px, 2vw, 16px) clamp(14px, 2.5vw, 24px);
           position: sticky;
           top: 0;
           z-index: 10;
@@ -187,7 +192,7 @@ export default function ParticipantesPage() {
         }
         .zpp-header-title {
           font-family: 'Kameron', serif;
-          font-size: clamp(15px, 2.5vw, 19px);
+          font-size: clamp(15px, 2.5vw, 20px);
           font-weight: 700;
           color: #0c2340;
           white-space: nowrap;
@@ -199,7 +204,7 @@ export default function ParticipantesPage() {
 
         /* ── HERO CARD ── */
         .zpp-hero {
-          margin: clamp(14px, 2.5vw, 20px) clamp(14px, 2.5vw, 20px) 0;
+          margin: clamp(14px, 2.5vw, 20px) clamp(14px, 2.5vw, 24px) 0;
           background: rgba(255, 255, 255, 0.88);
           backdrop-filter: blur(28px);
           -webkit-backdrop-filter: blur(28px);
@@ -223,7 +228,7 @@ export default function ParticipantesPage() {
           to { background-position: 200% 0%; }
         }
         .zpp-hero-body {
-          padding: clamp(14px, 2.5vw, 20px);
+          padding: clamp(14px, 2.5vw, 22px) clamp(14px, 2.5vw, 24px);
         }
         .zpp-hero-subtitle {
           font-family: 'DM Sans', sans-serif;
@@ -236,7 +241,7 @@ export default function ParticipantesPage() {
         }
         .zpp-hero-name {
           font-family: 'Kameron', serif;
-          font-size: clamp(17px, 3vw, 22px);
+          font-size: clamp(17px, 3vw, 24px);
           font-weight: 700;
           color: #0c2340;
           line-height: 1.25;
@@ -273,7 +278,7 @@ export default function ParticipantesPage() {
 
         /* ── CONTENT ── */
         .zpp-content {
-          padding: clamp(14px, 2.5vw, 20px);
+          padding: clamp(14px, 2.5vw, 20px) clamp(14px, 2.5vw, 24px);
         }
 
         /* ── FOOTER ── */
@@ -281,7 +286,7 @@ export default function ParticipantesPage() {
           text-align: center;
           padding: clamp(20px, 3vw, 28px) 16px 0;
           border-top: 1px solid rgba(147, 197, 253, 0.25);
-          margin: clamp(16px, 3vw, 24px) clamp(14px, 2.5vw, 20px) 0;
+          margin: clamp(16px, 3vw, 24px) clamp(14px, 2.5vw, 24px) 0;
         }
         .zpp-footer-text {
           font-family: 'DM Sans', sans-serif;
@@ -302,7 +307,6 @@ export default function ParticipantesPage() {
       `}</style>
 
       <div className="zpp-root">
-        {/* Burbujas de fondo */}
         <div className="zpp-bubble zpp-bubble-1" />
         <div className="zpp-bubble zpp-bubble-2" />
         <div className="zpp-bubble zpp-bubble-3" />
@@ -310,9 +314,8 @@ export default function ParticipantesPage() {
 
         <div className="zpp-inner">
 
-          {/* HEADER STICKY */}
           <div className="zpp-header">
-            <button onClick={() => navigate('/dashboard')} className="zpp-btn-volver">
+            <button onClick={() => navigate(-1)} className="zpp-btn-volver">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <polyline points="15 18 9 12 15 6" />
               </svg>
@@ -324,7 +327,6 @@ export default function ParticipantesPage() {
             </div>
           </div>
 
-          {/* HERO CARD */}
           <div className="zpp-hero">
             <div className="zpp-hero-bar" />
             <div className="zpp-hero-body">
@@ -337,7 +339,6 @@ export default function ParticipantesPage() {
             </div>
           </div>
 
-          {/* LISTA */}
           <div className="zpp-content">
             <ParticipantesList
               participantes={participantes}
@@ -347,7 +348,6 @@ export default function ParticipantesPage() {
             />
           </div>
 
-          {/* FOOTER */}
           <div className="zpp-footer">
             <p className="zpp-footer-text">
               <span className="zpp-footer-brand">Zeno Marketing</span> · Gestión de participantes

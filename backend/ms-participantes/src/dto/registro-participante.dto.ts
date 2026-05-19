@@ -4,6 +4,7 @@ export enum Nivel {
   C1 = 'C1',
   C2 = 'C2',
   C3 = 'C3',
+  B1 = 'B1',   // 👈 nuevo nivel
 }
 
 export enum TipoParticipante {

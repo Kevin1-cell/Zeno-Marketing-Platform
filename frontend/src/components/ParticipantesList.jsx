@@ -18,6 +18,8 @@ export default function ParticipantesList({ participantes, token, eventoId, onPa
   const [editData, setEditData] = useState({})
   const [convirtiendo, setConvirtiendo] = useState(null)
   const [confirmandoId, setConfirmandoId] = useState(null)
+  const [convertirModal, setConvertirModal] = useState(null)
+  const [nivelSeleccionado, setNivelSeleccionado] = useState('C1')
 
   const registrarManual = async (e) => {
     e.preventDefault()
@@ -81,14 +83,20 @@ export default function ParticipantesList({ participantes, token, eventoId, onPa
     }
   }
 
-  const convertirInvitado = async (id, nivel) => {
-    if (!nivel) return
-    setConvirtiendo(id)
+  const abrirConvertirModal = (p) => {
+    setNivelSeleccionado('C1')
+    setConvertirModal({ id: p.id, nombre: p.nombre_completo })
+  }
+
+  const confirmarConversion = async () => {
+    if (!convertirModal) return
+    setConvirtiendo(convertirModal.id)
     try {
-      await axios.post(`/participantes/convertir`, { id, nivel }, {
+      await axios.post(`/participantes/convertir`, { id: convertirModal.id, nivel: nivelSeleccionado }, {
         headers: { Authorization: `Bearer ${token}` }
       })
       toast.success('Invitado convertido a participante confirmado')
+      setConvertirModal(null)
       if (onParticipanteRegistrado) onParticipanteRegistrado()
     } catch (err) {
       toast.error('Error al convertir')
@@ -124,6 +132,18 @@ export default function ParticipantesList({ participantes, token, eventoId, onPa
   const totalPendientes = pendientes.length
   const totalConfirmados = confirmados.length
   const totalInvitados = invitados.length
+
+  // Función para obtener la clase del badge según el nivel
+  const getNivelClase = (nivel) => {
+    if (!nivel) return 'invitado'
+    switch(nivel) {
+      case 'C1': return 'c1'
+      case 'C2': return 'c2'
+      case 'C3': return 'c3'
+      case 'B1': return 'b1'  // agregamos clase b1 (puede tener mismo color que c3)
+      default: return 'invitado'
+    }
+  }
 
   return (
     <>
@@ -313,6 +333,11 @@ export default function ParticipantesList({ participantes, token, eventoId, onPa
           border-color: #f472b6;
           color: #9d174d;
         }
+        .zpl-nivel-btn.active-b1 {
+          background: rgba(139, 92, 246, 0.15);
+          border-color: #a78bfa;
+          color: #6d28d9;
+        }
         .zpl-btn-submit {
           width: 100%;
           background: linear-gradient(135deg, #38bdf8 0%, #0ea5e9 50%, #0284c7 100%);
@@ -407,19 +432,25 @@ export default function ParticipantesList({ participantes, token, eventoId, onPa
         .zpl-section-label.invitados { color: #0369a1; }
         .zpl-section-label.invitados::after { background: linear-gradient(90deg, rgba(56,189,248,0.35), transparent); }
 
-        /* ── PARTICIPANT CARD ── */
+        /* ── PARTICIPANT CARD (responsive grid) ── */
+        .zpl-cards-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fill, minmax(min(100%, 360px), 1fr));
+          gap: clamp(8px, 1.5vw, 12px);
+          margin-bottom: clamp(4px, 1vw, 6px);
+        }
+
         .zpl-card {
-          background: rgba(255, 255, 255, 0.88);
+          background: rgba(255, 255, 255, 0.92);
           backdrop-filter: blur(16px);
           -webkit-backdrop-filter: blur(16px);
           border: 1.5px solid rgba(147, 197, 253, 0.5);
           border-radius: clamp(14px, 2.5vw, 20px);
           box-shadow: 0 4px 16px rgba(14, 120, 180, 0.08);
-          padding: clamp(10px, 2vw, 14px) clamp(12px, 2vw, 16px);
+          padding: clamp(12px, 2vw, 16px);
           display: flex;
-          align-items: center;
-          gap: clamp(10px, 2vw, 14px);
-          margin-bottom: clamp(8px, 1.5vw, 10px);
+          flex-direction: column;
+          gap: 10px;
           transition: transform 0.18s, box-shadow 0.18s;
           animation: fadeUp 0.35s ease both;
         }
@@ -428,57 +459,122 @@ export default function ParticipantesList({ participantes, token, eventoId, onPa
           box-shadow: 0 8px 28px rgba(14, 120, 180, 0.15);
         }
 
+        /* card top row: badge + name + actions */
+        .zpl-card-top {
+          display: flex;
+          align-items: center;
+          gap: clamp(10px, 2vw, 14px);
+        }
+
         .zpl-nivel-badge {
-          width: clamp(36px, 6vw, 44px);
-          height: clamp(36px, 6vw, 44px);
+          width: clamp(40px, 6vw, 48px);
+          height: clamp(40px, 6vw, 48px);
           border-radius: clamp(10px, 2vw, 14px);
           display: flex;
           align-items: center;
           justify-content: center;
           font-family: 'Kameron', serif;
-          font-size: clamp(11px, 1.5vw, 13px);
+          font-size: clamp(13px, 1.8vw, 15px);
           font-weight: 700;
           flex-shrink: 0;
         }
         .zpl-nivel-badge.c1 { background: rgba(56, 189, 248, 0.15); color: #0284c7; border: 1.5px solid rgba(56,189,248,0.35); }
         .zpl-nivel-badge.c2 { background: rgba(251, 191, 36, 0.15); color: #92400e; border: 1.5px solid rgba(251,191,36,0.4); }
         .zpl-nivel-badge.c3 { background: rgba(244, 114, 182, 0.15); color: #9d174d; border: 1.5px solid rgba(244,114,182,0.35); }
-        .zpl-nivel-badge.invitado { background: rgba(14, 165, 233, 0.12); color: #0369a1; border: 1.5px solid rgba(14,165,233,0.3); font-size: 16px; }
+        .zpl-nivel-badge.b1 { background: rgba(139, 92, 246, 0.15); color: #6d28d9; border: 1.5px solid rgba(139,92,246,0.35); }
+        .zpl-nivel-badge.invitado { background: rgba(14, 165, 233, 0.12); color: #0369a1; border: 1.5px solid rgba(14,165,233,0.3); font-size: 18px; }
 
-        .zpl-info { flex: 1; min-width: 0; }
+        .zpl-name-wrap {
+          flex: 1;
+          min-width: 0;
+        }
         .zpl-name {
-          font-family: 'DM Sans', sans-serif;
-          font-size: clamp(13px, 1.8vw, 15px);
+          font-family: 'Kameron', serif;
+          font-size: clamp(15px, 2.2vw, 18px);
           font-weight: 700;
           color: #0c2340;
           white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;
+          line-height: 1.2;
         }
-        .zpl-meta {
-          font-size: clamp(11px, 1.3vw, 12px);
-          color: #475569;
-          margin-top: 3px;
-          display: flex;
-          gap: clamp(6px, 1.2vw, 10px);
-          flex-wrap: wrap;
+        .zpl-tipo-chip {
+          display: inline-block;
           font-family: 'DM Sans', sans-serif;
-          font-weight: 500;
+          font-size: clamp(9px, 1vw, 10px);
+          font-weight: 700;
+          letter-spacing: 0.12em;
+          text-transform: uppercase;
+          color: #64748b;
+          margin-top: 2px;
         }
-        .zpl-meta-chip {
+
+        /* card bottom row: phone pill + numero + recompensa */
+        .zpl-card-data {
           display: flex;
           align-items: center;
-          gap: 3px;
+          gap: 8px;
+          flex-wrap: wrap;
         }
+
+        /* phone pill – big and readable */
+        .zpl-phone-pill {
+          display: flex;
+          align-items: center;
+          gap: 7px;
+          background: rgba(12, 35, 64, 0.06);
+          border: 1.5px solid rgba(12, 35, 64, 0.12);
+          border-radius: 999px;
+          padding: 5px 14px 5px 10px;
+        }
+        .zpl-phone-icon {
+          width: 22px;
+          height: 22px;
+          border-radius: 50%;
+          background: #0ea5e9;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex-shrink: 0;
+        }
+        .zpl-phone-icon svg {
+          display: block;
+        }
+        .zpl-phone-num {
+          font-family: 'Kameron', serif;
+          font-size: clamp(15px, 2.2vw, 17px);
+          font-weight: 700;
+          color: #0c2340;
+          letter-spacing: 0.04em;
+        }
+
+        /* numero asignado badge */
         .zpl-num-badge {
+          display: flex;
+          align-items: center;
+          gap: 4px;
           background: rgba(193, 127, 10, 0.12);
-          color: #c17f0a;
-          border: 1.5px solid rgba(193, 127, 10, 0.25);
-          border-radius: 8px;
-          padding: 1px 7px;
+          color: #92400e;
+          border: 1.5px solid rgba(193, 127, 10, 0.28);
+          border-radius: 999px;
+          padding: 5px 12px;
           font-family: 'Kameron', serif;
           font-weight: 700;
-          font-size: clamp(11px, 1.3vw, 13px);
+          font-size: clamp(13px, 1.8vw, 15px);
+        }
+
+        .zpl-recompensa-chip {
+          display: flex;
+          align-items: center;
+          gap: 5px;
+          font-family: 'DM Sans', sans-serif;
+          font-size: clamp(11px, 1.3vw, 12px);
+          font-weight: 600;
+          color: #0369a1;
+          background: rgba(14, 165, 233, 0.08);
+          border: 1.5px solid rgba(14, 165, 233, 0.2);
+          border-radius: 999px;
+          padding: 4px 11px;
         }
 
         .zpl-actions {
@@ -578,6 +674,87 @@ export default function ParticipantesList({ participantes, token, eventoId, onPa
         }
         .zpl-btn-outline:hover { background: rgba(56, 189, 248, 0.12); }
 
+        /* ── CONVERTIR MODAL NIVEL SELECTOR ── */
+        .zpl-convertir-subtitle {
+          font-family: 'DM Sans', sans-serif;
+          font-size: clamp(12px, 1.4vw, 14px);
+          color: #475569;
+          margin-bottom: clamp(14px, 2vw, 18px);
+          margin-top: -8px;
+        }
+        .zpl-convertir-subtitle strong {
+          color: #0c2340;
+          font-weight: 700;
+        }
+        .zpl-nivel-select-group {
+          display: flex;
+          gap: 10px;
+        }
+        .zpl-nivel-select-btn {
+          flex: 1;
+          padding: clamp(14px, 2.5vw, 20px) clamp(10px, 1.5vw, 14px);
+          border-radius: clamp(14px, 2.5vw, 18px);
+          border: 2px solid rgba(147, 197, 253, 0.4);
+          font-family: 'Kameron', serif;
+          font-size: clamp(18px, 3vw, 24px);
+          font-weight: 700;
+          cursor: pointer;
+          transition: all 0.2s;
+          background: rgba(240, 249, 255, 0.6);
+          color: #475569;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 4px;
+          position: relative;
+          overflow: hidden;
+        }
+        .zpl-nivel-select-btn::before {
+          content: '';
+          position: absolute;
+          top: 0; left: 0; right: 0;
+          height: 3px;
+          border-radius: 0;
+          opacity: 0;
+          transition: opacity 0.2s;
+        }
+        .zpl-nivel-select-btn.sel-c1 {
+          background: rgba(56, 189, 248, 0.12);
+          border-color: #38bdf8;
+          color: #0284c7;
+          box-shadow: 0 4px 16px rgba(56, 189, 248, 0.25);
+        }
+        .zpl-nivel-select-btn.sel-c1::before { background: linear-gradient(90deg, #38bdf8, #0ea5e9); opacity: 1; }
+        .zpl-nivel-select-btn.sel-c2 {
+          background: rgba(251, 191, 36, 0.12);
+          border-color: #fbbf24;
+          color: #92400e;
+          box-shadow: 0 4px 16px rgba(251, 191, 36, 0.25);
+        }
+        .zpl-nivel-select-btn.sel-c2::before { background: linear-gradient(90deg, #fbbf24, #f59e0b); opacity: 1; }
+        .zpl-nivel-select-btn.sel-c3 {
+          background: rgba(244, 114, 182, 0.12);
+          border-color: #f472b6;
+          color: #9d174d;
+          box-shadow: 0 4px 16px rgba(244, 114, 182, 0.25);
+        }
+        .zpl-nivel-select-btn.sel-c3::before { background: linear-gradient(90deg, #f472b6, #ec4899); opacity: 1; }
+        .zpl-nivel-select-btn.sel-b1 {
+          background: rgba(139, 92, 246, 0.12);
+          border-color: #a78bfa;
+          color: #6d28d9;
+          box-shadow: 0 4px 16px rgba(139, 92, 246, 0.25);
+        }
+        .zpl-nivel-select-btn.sel-b1::before { background: linear-gradient(90deg, #a78bfa, #8b5cf6); opacity: 1; }
+        .zpl-nivel-select-label {
+          font-family: 'DM Sans', sans-serif;
+          font-size: clamp(9px, 1vw, 10px);
+          font-weight: 700;
+          letter-spacing: 0.12em;
+          text-transform: uppercase;
+          opacity: 0.7;
+        }
+
         /* ── EMPTY ── */
         .zpl-empty {
           text-align: center;
@@ -608,7 +785,6 @@ export default function ParticipantesList({ participantes, token, eventoId, onPa
         .zpl-spin { animation: spin 0.9s linear infinite; }
       `}</style>
 
-      {/* TOP BAR */}
       <div className="zpl-topbar">
         <div className="zpl-search-wrap">
           <span className="zpl-search-icon"><Search size={15} /></span>
@@ -629,7 +805,6 @@ export default function ParticipantesList({ participantes, token, eventoId, onPa
         </button>
       </div>
 
-      {/* FORM MANUAL */}
       {mostrarFormManual && (
         <div className="zpl-form-card">
           <p className="zpl-form-title">
@@ -680,7 +855,7 @@ export default function ParticipantesList({ participantes, token, eventoId, onPa
                 <div>
                   <label className="zpl-label">Nivel</label>
                   <div className="zpl-nivel-group">
-                    {['C1', 'C2', 'C3'].map(n => (
+                    {['C1', 'C2', 'C3', 'B1'].map(n => (
                       <button
                         key={n}
                         type="button"
@@ -713,23 +888,21 @@ export default function ParticipantesList({ participantes, token, eventoId, onPa
         </div>
       )}
 
-      {/* COUNTERS */}
       <div className="zpl-counters">
         <div className="zpl-counter pending">
           <p className="zpl-counter-num">{totalPendientes}</p>
           <p className="zpl-counter-label">Pendientes</p>
         </div>
-        <div className="zpl-counter confirmed">
-          <p className="zpl-counter-num">{totalConfirmados}</p>
-          <p className="zpl-counter-label">Confirmados</p>
-        </div>
         <div className="zpl-counter invitados">
           <p className="zpl-counter-num">{totalInvitados}</p>
           <p className="zpl-counter-label">Invitados</p>
         </div>
+        <div className="zpl-counter confirmed">
+          <p className="zpl-counter-num">{totalConfirmados}</p>
+          <p className="zpl-counter-label">Confirmados</p>
+        </div>
       </div>
 
-      {/* EDIT MODAL */}
       {editModal && (
         <div className="zpl-modal-overlay" onClick={() => setEditModal(null)}>
           <div className="zpl-modal" onClick={e => e.stopPropagation()}>
@@ -762,7 +935,7 @@ export default function ParticipantesList({ participantes, token, eventoId, onPa
                 <div>
                   <label className="zpl-label">Nivel</label>
                   <div className="zpl-nivel-group">
-                    {['C1', 'C2', 'C3'].map(n => (
+                    {['C1', 'C2', 'C3', 'B1'].map(n => (
                       <button
                         key={n}
                         type="button"
@@ -803,65 +976,108 @@ export default function ParticipantesList({ participantes, token, eventoId, onPa
         </div>
       )}
 
-      {/* PENDIENTES */}
+      {convertirModal && (
+        <div className="zpl-modal-overlay" onClick={() => setConvertirModal(null)}>
+          <div className="zpl-modal" onClick={e => e.stopPropagation()}>
+            <div className="zpl-modal-header">
+              <h3 className="zpl-modal-title">Convertir invitado</h3>
+              <button className="zpl-modal-close" onClick={() => setConvertirModal(null)}>
+                <X size={15} />
+              </button>
+            </div>
+            <p className="zpl-convertir-subtitle">
+              Selecciona el nivel para <strong>{convertirModal.nombre}</strong>
+            </p>
+            <div>
+              <label className="zpl-label" style={{ marginBottom: '10px' }}>Nivel del participante</label>
+              <div className="zpl-nivel-select-group">
+                {['C1', 'C2', 'C3', 'B1'].map(n => (
+                  <button
+                    key={n}
+                    type="button"
+                    onClick={() => setNivelSeleccionado(n)}
+                    className={`zpl-nivel-select-btn${nivelSeleccionado === n ? ` sel-${n.toLowerCase()}` : ''}`}
+                  >
+                    {n}
+                    <span className="zpl-nivel-select-label">Nivel</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="zpl-modal-footer">
+              <button
+                onClick={confirmarConversion}
+                disabled={convirtiendo === convertirModal.id}
+                className="zpl-btn-submit"
+                style={{ flex: 1 }}
+              >
+                {convirtiendo === convertirModal.id
+                  ? 'Convirtiendo...'
+                  : `Confirmar como ${nivelSeleccionado}`
+                }
+              </button>
+              <button onClick={() => setConvertirModal(null)} className="zpl-btn-outline">
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {pendientes.length > 0 && (
         <>
           <p className="zpl-section-label pending">⏳ Pendientes ({pendientes.length})</p>
-          {pendientes.map(p => (
-            <ParticipanteCard
-              key={p.id}
-              p={p}
-              onEdit={() => { setEditModal(p.id); setEditData(p) }}
-              onConfirmar={() => confirmarParticipante(p.id)}
-              confirmando={confirmandoId === p.id}
-              onConvertirInvitado={null}
-            />
-          ))}
+          <div className="zpl-cards-grid">
+            {pendientes.map(p => (
+              <ParticipanteCard
+                key={p.id}
+                p={p}
+                onEdit={() => { setEditModal(p.id); setEditData(p) }}
+                onConfirmar={() => confirmarParticipante(p.id)}
+                confirmando={confirmandoId === p.id}
+                onConvertirInvitado={null}
+              />
+            ))}
+          </div>
         </>
       )}
 
-      {/* CONFIRMADOS */}
-      {confirmados.length > 0 && (
-        <>
-          <p className="zpl-section-label confirmed">✓ Confirmados ({confirmados.length})</p>
-          {confirmados.map(p => (
-            <ParticipanteCard
-              key={p.id}
-              p={p}
-              onEdit={() => { setEditModal(p.id); setEditData(p) }}
-              onConfirmar={null}
-              confirmando={false}
-              onConvertirInvitado={null}
-            />
-          ))}
-        </>
-      )}
-
-      {/* INVITADOS */}
       {invitados.length > 0 && (
         <>
           <p className="zpl-section-label invitados">🎟️ Invitados ({invitados.length})</p>
-          {invitados.map(p => (
-            <ParticipanteCard
-              key={p.id}
-              p={p}
-              onEdit={() => { setEditModal(p.id); setEditData(p) }}
-              onConfirmar={null}
-              confirmando={false}
-              onConvertirInvitado={() => {
-                const nivel = prompt('Selecciona el nivel del participante:', 'C1')
-                if (nivel === 'C1' || nivel === 'C2' || nivel === 'C3') {
-                  convertirInvitado(p.id, nivel)
-                } else {
-                  toast.error('Nivel no válido')
-                }
-              }}
-            />
-          ))}
+          <div className="zpl-cards-grid">
+            {invitados.map(p => (
+              <ParticipanteCard
+                key={p.id}
+                p={p}
+                onEdit={() => { setEditModal(p.id); setEditData(p) }}
+                onConfirmar={null}
+                confirmando={false}
+                onConvertirInvitado={() => abrirConvertirModal(p)}
+              />
+            ))}
+          </div>
         </>
       )}
 
-      {/* EMPTY */}
+      {confirmados.length > 0 && (
+        <>
+          <p className="zpl-section-label confirmed">✓ Confirmados ({confirmados.length})</p>
+          <div className="zpl-cards-grid">
+            {confirmados.map(p => (
+              <ParticipanteCard
+                key={p.id}
+                p={p}
+                onEdit={() => { setEditModal(p.id); setEditData(p) }}
+                onConfirmar={null}
+                confirmando={false}
+                onConvertirInvitado={null}
+              />
+            ))}
+          </div>
+        </>
+      )}
+
       {pendientes.length === 0 && confirmados.length === 0 && invitados.length === 0 && (
         <div className="zpl-empty">
           <div className="zpl-empty-icon">{filtro ? '🔍' : '👥'}</div>
@@ -873,49 +1089,72 @@ export default function ParticipantesList({ participantes, token, eventoId, onPa
 }
 
 function ParticipanteCard({ p, onEdit, onConfirmar, confirmando, onConvertirInvitado }) {
-  const nivelClase = p.tipo === 'INVITADO' ? 'invitado' : (p.nivel?.toLowerCase() || 'c1')
+  const getNivelClase = () => {
+    if (p.tipo === 'INVITADO') return 'invitado'
+    switch(p.nivel) {
+      case 'C1': return 'c1'
+      case 'C2': return 'c2'
+      case 'C3': return 'c3'
+      case 'B1': return 'b1'
+      default: return 'invitado'
+    }
+  }
+  const nivelClase = getNivelClase()
   return (
     <div className="zpl-card">
-      <div className={`zpl-nivel-badge ${nivelClase}`}>
-        {p.tipo === 'INVITADO' ? '🎟️' : p.nivel}
-      </div>
-      <div className="zpl-info">
-        <p className="zpl-name">{p.nombre_completo}</p>
-        <div className="zpl-meta">
-          <span className="zpl-meta-chip">📞 {p.telefon}</span>
-          {p.numero_asignado && (
-            <span className="zpl-num-badge">N° {p.numero_asignado}</span>
+      <div className="zpl-card-top">
+        <div className={`zpl-nivel-badge ${nivelClase}`}>
+          {p.tipo === 'INVITADO' ? '🎟️' : p.nivel}
+        </div>
+        <div className="zpl-name-wrap">
+          <p className="zpl-name">{p.nombre_completo}</p>
+          <span className="zpl-tipo-chip">{p.tipo === 'INVITADO' ? 'Invitado' : `Empleado · ${p.nivel}`}</span>
+        </div>
+        <div className="zpl-actions">
+          <button onClick={onEdit} className="zpl-btn-icon edit" title="Editar">
+            <Edit size={15} />
+          </button>
+          {onConfirmar && (
+            <button
+              onClick={onConfirmar}
+              disabled={confirmando}
+              className="zpl-btn-icon confirm"
+              title="Confirmar"
+            >
+              {confirmando
+                ? <RefreshCw size={14} className="zpl-spin" />
+                : <CheckCircle2 size={15} />
+              }
+            </button>
           )}
-          {p.tipo === 'INVITADO' && p.recompensa && (
-            <span className="zpl-meta-chip">🏆 {p.recompensa}</span>
+          {p.tipo === 'INVITADO' && onConvertirInvitado && (
+            <button
+              onClick={onConvertirInvitado}
+              className="zpl-btn-icon convert"
+              title="Convertir a participante"
+            >
+              <RefreshCw size={14} />
+            </button>
           )}
         </div>
       </div>
-      <div className="zpl-actions">
-        <button onClick={onEdit} className="zpl-btn-icon edit" title="Editar">
-          <Edit size={15} />
-        </button>
-        {onConfirmar && (
-          <button
-            onClick={onConfirmar}
-            disabled={confirmando}
-            className="zpl-btn-icon confirm"
-            title="Confirmar"
-          >
-            {confirmando
-              ? <RefreshCw size={14} className="zpl-spin" />
-              : <CheckCircle2 size={15} />
-            }
-          </button>
+
+      <div className="zpl-card-data">
+        <div className="zpl-phone-pill">
+          <div className="zpl-phone-icon">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 11.9 19.79 19.79 0 0 1 1.61 3.27 2 2 0 0 1 3.6 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.57a16 16 0 0 0 6.29 6.29l.97-.97a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z" />
+            </svg>
+          </div>
+          <span className="zpl-phone-num">{p.telefon}</span>
+        </div>
+        {p.numero_asignado && (
+          <div className="zpl-num-badge">
+            N° {p.numero_asignado}
+          </div>
         )}
-        {p.tipo === 'INVITADO' && onConvertirInvitado && (
-          <button
-            onClick={onConvertirInvitado}
-            className="zpl-btn-icon convert"
-            title="Convertir a participante"
-          >
-            <RefreshCw size={14} />
-          </button>
+        {p.tipo === 'INVITADO' && p.recompensa && (
+          <span className="zpl-recompensa-chip">🏆 {p.recompensa}</span>
         )}
       </div>
     </div>

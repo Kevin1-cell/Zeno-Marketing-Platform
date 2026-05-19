@@ -53,9 +53,16 @@ export class SorteosService {
       evento_id: sorteo.evento_id,
       confirmado: true,
     };
+
     if (sorteo.nivel_filtro !== 'TODOS') {
-      where.nivel = sorteo.nivel_filtro;
+      // Si el filtro es C3, incluimos también B1
+      if (sorteo.nivel_filtro === 'C3') {
+        where.nivel = { in: ['C3', 'B1'] };
+      } else {
+        where.nivel = sorteo.nivel_filtro;
+      }
     }
+
     const participantes = await this.prisma.participante.findMany({
       where,
       select: { id: true, numero_asignado: true, nombre_completo: true, telefon: true },
@@ -110,7 +117,6 @@ export class SorteosService {
       throw new BadRequestException('Participante no válido o no confirmado');
     }
 
-    // Verificar que no haya ganado ya en este sorteo (doble check)
     const yaGanador = await this.prisma.ganador.findFirst({
       where: { sorteo_id, numero_ganador },
     });
@@ -118,7 +124,6 @@ export class SorteosService {
       throw new ConflictException('Este número ya tiene un ganador asignado en este sorteo');
     }
 
-    // Modo PRE_CARGA (no usado, pero lo dejamos)
     let premioAsignado: { id: string } | null = null;
     if (sorteo.modo_premios === 'PRE_CARGA') {
       const siguientePremio = await this.prisma.premio.findFirst({
@@ -147,13 +152,11 @@ export class SorteosService {
       include: { participante: true, premio: true },
     });
 
-    // Limpiar exclusión temporal de este número (si existía)
     const tempEx = this.exclusionesTemporales.get(sorteo_id);
     if (tempEx) {
       tempEx.delete(numero_ganador);
     }
 
-    // Si el sorteo estaba pendiente, pasar a EN_CURSO
     if (sorteo.estado === 'PENDIENTE') {
       await this.prisma.sorteo.update({
         where: { id: sorteo_id },

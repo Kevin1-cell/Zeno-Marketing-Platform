@@ -16,6 +16,7 @@ var Nivel;
     Nivel["C1"] = "C1";
     Nivel["C2"] = "C2";
     Nivel["C3"] = "C3";
+    Nivel["B1"] = "B1";
 })(Nivel || (exports.Nivel = Nivel = {}));
 var TipoParticipante;
 (function (TipoParticipante) {

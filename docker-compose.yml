@@ -1,0 +1,100 @@
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: zeno-postgres
+    environment:
+      POSTGRES_USER: zeno_user
+      POSTGRES_PASSWORD: zeno_pass_2024
+      POSTGRES_DB: zeno_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U zeno_user -d zeno_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  ms-auth:
+    build: ./backend/ms-auth
+    ports:
+      - "3001:3001"
+    environment:
+      DATABASE_URL: postgresql://zeno_user:zeno_pass_2024@postgres:5432/zeno_db
+      JWT_SECRET: clave_super_secreta_para_zeno
+      JWT_REFRESH_SECRET: otra_clave_secreta_para_refresh
+      PORT: 3001
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3001/auth/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  ms-eventos:
+    build: ./backend/ms-eventos
+    ports:
+      - "3002:3002"
+    environment:
+      DATABASE_URL: postgresql://zeno_user:zeno_pass_2024@postgres:5432/zeno_db
+      JWT_SECRET: clave_super_secreta_para_zeno
+      JWT_REFRESH_SECRET: otra_clave_secreta_para_refresh
+      PORT: 3002
+    depends_on:
+      postgres:
+        condition: service_healthy
+      ms-auth:
+        condition: service_healthy
+    restart: unless-stopped
+
+  ms-participantes:
+    build: ./backend/ms-participantes
+    ports:
+      - "3003:3003"
+    environment:
+      DATABASE_URL: postgresql://zeno_user:zeno_pass_2024@postgres:5432/zeno_db
+      JWT_SECRET: clave_super_secreta_para_zeno
+      JWT_REFRESH_SECRET: otra_clave_secreta_para_refresh
+      PORT: 3003
+    depends_on:
+      postgres:
+        condition: service_healthy
+      ms-auth:
+        condition: service_healthy
+    restart: unless-stopped
+
+  ms-sorteos:
+    build: ./backend/ms-sorteos
+    ports:
+      - "3004:3004"
+    environment:
+      DATABASE_URL: postgresql://zeno_user:zeno_pass_2024@postgres:5432/zeno_db
+      JWT_SECRET: clave_super_secreta_para_zeno
+      JWT_REFRESH_SECRET: otra_clave_secreta_para_refresh
+      PORT: 3004
+    depends_on:
+      postgres:
+        condition: service_healthy
+      ms-auth:
+        condition: service_healthy
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+    ports:
+      - "5173:80"
+    depends_on:
+      - ms-auth
+      - ms-eventos
+      - ms-participantes
+      - ms-sorteos
+    restart: unless-stopped
+
+volumes:
+  postgres_data:

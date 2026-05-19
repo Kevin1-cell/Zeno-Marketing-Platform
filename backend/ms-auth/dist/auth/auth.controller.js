@@ -21,6 +21,9 @@ let AuthController = class AuthController {
     constructor(authService) {
         this.authService = authService;
     }
+    health() {
+        return { status: 'ok' };
+    }
     async login(loginDto) {
         return this.authService.login(loginDto);
     }
@@ -32,6 +35,12 @@ let AuthController = class AuthController {
     }
 };
 exports.AuthController = AuthController;
+__decorate([
+    (0, common_1.Get)('health'),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", void 0)
+], AuthController.prototype, "health", null);
 __decorate([
     (0, common_1.Post)('login'),
     __param(0, (0, common_1.Body)()),

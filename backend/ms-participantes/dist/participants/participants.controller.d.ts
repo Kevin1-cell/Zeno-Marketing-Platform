@@ -12,6 +12,7 @@ export declare class ParticipantsController {
         message: string;
         participante: {
             id: string;
+            created_at: Date;
             evento_id: string;
             nombre_completo: string;
             telefon: string;
@@ -21,11 +22,11 @@ export declare class ParticipantsController {
             tipo: import("@prisma/client").$Enums.TipoParticipante;
             se_unio: boolean | null;
             recompensa: string | null;
-            created_at: Date;
         };
     }>;
     confirmar({ id }: ConfirmarParticipanteDto): Promise<{
         id: string;
+        created_at: Date;
         evento_id: string;
         nombre_completo: string;
         telefon: string;
@@ -35,10 +36,10 @@ export declare class ParticipantsController {
         tipo: import("@prisma/client").$Enums.TipoParticipante;
         se_unio: boolean | null;
         recompensa: string | null;
-        created_at: Date;
     }>;
     convertirInvitado(dto: ConvertirInvitadoDto): Promise<{
         id: string;
+        created_at: Date;
         evento_id: string;
         nombre_completo: string;
         telefon: string;
@@ -48,10 +49,10 @@ export declare class ParticipantsController {
         tipo: import("@prisma/client").$Enums.TipoParticipante;
         se_unio: boolean | null;
         recompensa: string | null;
-        created_at: Date;
     }>;
     editar(id: string, data: EditarParticipanteDto): Promise<{
         id: string;
+        created_at: Date;
         evento_id: string;
         nombre_completo: string;
         telefon: string;
@@ -61,10 +62,10 @@ export declare class ParticipantsController {
         tipo: import("@prisma/client").$Enums.TipoParticipante;
         se_unio: boolean | null;
         recompensa: string | null;
-        created_at: Date;
     }>;
     listar(evento_id: string, soloConfirmados?: string, tipo?: string, soloInvitadosNoUnidos?: string): Promise<{
         id: string;
+        created_at: Date;
         evento_id: string;
         nombre_completo: string;
         telefon: string;
@@ -74,10 +75,10 @@ export declare class ParticipantsController {
         tipo: import("@prisma/client").$Enums.TipoParticipante;
         se_unio: boolean | null;
         recompensa: string | null;
-        created_at: Date;
     }[]>;
     consultar(telefon: string, evento_id: string): Promise<{
         id: string;
+        created_at: Date;
         evento_id: string;
         nombre_completo: string;
         telefon: string;
@@ -87,10 +88,10 @@ export declare class ParticipantsController {
         tipo: import("@prisma/client").$Enums.TipoParticipante;
         se_unio: boolean | null;
         recompensa: string | null;
-        created_at: Date;
     }>;
     registrarManual(data: RegistroParticipanteDto): Promise<{
         id: string;
+        created_at: Date;
         evento_id: string;
         nombre_completo: string;
         telefon: string;
@@ -100,10 +101,10 @@ export declare class ParticipantsController {
         tipo: import("@prisma/client").$Enums.TipoParticipante;
         se_unio: boolean | null;
         recompensa: string | null;
-        created_at: Date;
     }>;
     obtener(id: string): Promise<{
         id: string;
+        created_at: Date;
         evento_id: string;
         nombre_completo: string;
         telefon: string;
@@ -113,6 +114,5 @@ export declare class ParticipantsController {
         tipo: import("@prisma/client").$Enums.TipoParticipante;
         se_unio: boolean | null;
         recompensa: string | null;
-        created_at: Date;
     }>;
 }
